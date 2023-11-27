@@ -4,7 +4,8 @@ local eastTrain = nil
 local tram = nil
 local westBlipRendered = false
 local eastBlipRendered = false
-local trainDriver = nil
+local eastTrainDriver = nil
+local westTrainDriver = nil
 
 -- Starting locations
 local loc = vector3(2590.34, -1477.24, 45.86)
@@ -61,7 +62,7 @@ local function WestTrainCreateVehicle(trainModel, loc, speed)
 		Citizen.Wait(1)
 	end
 
-	trainDriver = trainDriverHandle
+	westTrainDriver = trainDriverHandle
 
 	-- Make driver invincible
 	Citizen.InvokeNative(0xA5C38736C426FCB8, trainDriverHandle, true)
@@ -107,7 +108,7 @@ local function EastTrainCreateVehicle(trainModel, loc, speed)
 		Citizen.Wait(1)
 	end
 
-	trainDriver = trainDriverHandle
+	eastTrainDriver = trainDriverHandle
 
 	-- Make driver invincible
 	Citizen.InvokeNative(0xA5C38736C426FCB8, trainDriverHandle, true)
@@ -216,7 +217,6 @@ CreateThread(function()
 						Citizen.InvokeNative(0x3ABFA128F5BF5A70, Config.WestJunctions[i].trainTrack, Config.WestJunctions[i].junctionIndex, Config.WestJunctions[i].enabled)
 						Wait(45000)
 					else
-						print("test")
 						Citizen.InvokeNative(0xE6C5E2125EB210C1, Config.WestJunctions[i].trainTrack, Config.WestJunctions[i].junctionIndex, Config.WestJunctions[i].enabled)
 						Citizen.InvokeNative(0x3ABFA128F5BF5A70, Config.WestJunctions[i].trainTrack, Config.WestJunctions[i].junctionIndex, Config.WestJunctions[i].enabled)
 					end
@@ -230,8 +230,13 @@ end)
 CreateThread(function()
 	while true do
 		Wait(1)
-		if trainDriver then
-			if GetDistanceBetweenCoords(GetEntityCoords(trainDriver), GetEntityCoords(PlayerPedId())) < 12.5 then
+		if westTrainDriver then
+			if GetDistanceBetweenCoords(GetEntityCoords(westTrainDriver), GetEntityCoords(PlayerPedId())) < 12.5 then
+				Citizen.InvokeNative(0xFC094EF26DD153FA,12)
+			end
+		end
+		if eastTrainDriver then
+			if GetDistanceBetweenCoords(GetEntityCoords(eastTrainDriver), GetEntityCoords(PlayerPedId())) < 12.5 then
 				Citizen.InvokeNative(0xFC094EF26DD153FA,12)
 			end
 		end
