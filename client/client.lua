@@ -183,7 +183,29 @@ RegisterNetEvent("vorp:SelectedCharacter", function()
 	end
 end)
 
--- Handle train shit
+-- Handle west train shit
+CreateThread(function()
+	while true do
+		Wait(500)
+		if westTrain then
+			if not westBlipRendered then
+				RenderTrainBlip(westTrain, "west")
+			end
+			for i = 1, #Config.WestJunctions do
+				if GetDistanceBetweenCoords(GetEntityCoords(westTrain), Config.WestJunctions[i].coords) < 25 then
+					Citizen.InvokeNative(0xE6C5E2125EB210C1, Config.WestJunctions[i].trainTrack, Config.WestJunctions[i].junctionIndex, Config.WestJunctions[i].enabled)
+					Citizen.InvokeNative(0x3ABFA128F5BF5A70, Config.WestJunctions[i].trainTrack, Config.WestJunctions[i].junctionIndex, Config.WestJunctions[i].enabled)
+				end
+			end
+			if Citizen.InvokeNative(0xE887BD31D97793F6, westTrain) then
+				Citizen.InvokeNative(0x3660BCAB3A6BB734, westTrain)
+				Wait(Config.WestTrainStationWait*1000)
+				Citizen.InvokeNative(0x787E43477746876F, westTrain)
+			end
+		end
+	end
+end)
+
 CreateThread(function()
 	while true do
 		Wait(500)
@@ -208,22 +230,6 @@ CreateThread(function()
 				Citizen.InvokeNative(0x3660BCAB3A6BB734, eastTrain)
 				Wait(Config.EastTrainStationWait*1000)
 				Citizen.InvokeNative(0x787E43477746876F, eastTrain)
-			end
-		end
-		if westTrain then
-			if not westBlipRendered then
-				RenderTrainBlip(westTrain, "west")
-			end
-			for i = 1, #Config.WestJunctions do
-				if GetDistanceBetweenCoords(GetEntityCoords(westTrain), Config.WestJunctions[i].coords) < 25 then
-					Citizen.InvokeNative(0xE6C5E2125EB210C1, Config.WestJunctions[i].trainTrack, Config.WestJunctions[i].junctionIndex, Config.WestJunctions[i].enabled)
-					Citizen.InvokeNative(0x3ABFA128F5BF5A70, Config.WestJunctions[i].trainTrack, Config.WestJunctions[i].junctionIndex, Config.WestJunctions[i].enabled)
-				end
-			end
-			if Citizen.InvokeNative(0xE887BD31D97793F6, westTrain) then
-				Citizen.InvokeNative(0x3660BCAB3A6BB734, westTrain)
-				Wait(Config.WestTrainStationWait*1000)
-				Citizen.InvokeNative(0x787E43477746876F, westTrain)
 			end
 		end
 	end
