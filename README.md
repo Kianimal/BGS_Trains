@@ -3,6 +3,7 @@ An ambient train script for RedM servers.
 
 This script is a resurrection of tr_trains, rebuilt in lua.
 Credits go to the author of ts_trains, as well as @Wartype and @t3chman for their help/info on track junctions and hashes.
+Credit also goes to @Hobbs for the Christmas train help!
 
 This script will add ambient trains to your server.
 
