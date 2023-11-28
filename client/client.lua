@@ -51,7 +51,7 @@ local function WestTrainCreateVehicle(trainModel, loc, speed)
 	SetTrainCruiseSpeed(westTrain, speed)
 	Citizen.InvokeNative(0x9F29999DFDF2AEB8, westTrain, speed)
 	Citizen.InvokeNative(0x4182C037AA1F0091, westTrain, true) 					-- Set train stops for stations
-	Citizen.InvokeNative(0x8EC47DD4300BF063, westTrain, 0.0) 					-- Set train offset for station
+	Citizen.InvokeNative(0x8EC47DD4300BF063, westTrain, 30.0) 					-- Set train offset for station
 
 	RenderTrainBlip(westTrain, "west")
 
@@ -141,7 +141,7 @@ local function TramCreateVehicle(trainModel, loc)
 	tram = Citizen.InvokeNative(0xC239DBD9A57D2A71, trainModel, loc, true, false, true, true)
 	SetTrainSpeed(tram, 2.0)
 	Citizen.InvokeNative(0x4182C037AA1F0091, tram, true) 					-- Set train stops for stations
-	Citizen.InvokeNative(0x8EC47DD4300BF063, tram, 30.0) 					-- Set train offset for station
+	Citizen.InvokeNative(0x8EC47DD4300BF063, tram, 0.0) 					-- Set train offset for station
 
 	local trainDriverHandle = GetPedInVehicleSeat(tram, -1)
 	while not DoesEntityExist(trainDriverHandle) do
