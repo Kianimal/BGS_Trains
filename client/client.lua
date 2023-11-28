@@ -6,6 +6,11 @@ local westBlipRendered = false
 local eastBlipRendered = false
 local eastTrainDriver = nil
 local westTrainDriver = nil
+local Trains = {}
+local TrainModels = {
+    'northsteamer01x'
+}
+local christmasTrainHash = 0x124A1F89
 
 -- Starting locations
 local loc = vector3(2590.34, -1477.24, 45.86)
@@ -162,6 +167,61 @@ local function TramCreateVehicle(trainModel, loc)
 
 end
 
+local entityEnumerator = {
+    __gc = function(enum)
+        if enum.destructor and enum.handle then
+            enum.destructor(enum.handle)
+        end
+        enum.destructor = nil
+        enum.handle = nil
+    end
+}
+
+local function EnumerateEntities(firstFunc, nextFunc, endFunc)
+    return coroutine.wrap(function()
+        local iter, id = firstFunc()
+
+        if not id or id == 0 then
+            endFunc(iter)
+            return
+        end
+
+        local enum = {handle = iter, destructor = endFunc}
+        setmetatable(enum, entityEnumerator)
+
+        local next = true
+        repeat
+            coroutine.yield(id)
+            next, id = nextFunc(iter)
+        until not next
+
+        enum.destructor, enum.handle = nil, nil
+        endFunc(iter)
+    end)
+end
+
+local function EnumerateVehicles()
+    return EnumerateEntities(FindFirstVehicle, FindNextVehicle, EndFindVehicle)
+end
+
+local function IsTrain(vehicle)
+    local model = GetEntityModel(vehicle)
+
+    for _, trainModel in ipairs(TrainModels) do
+        if model == GetHashKey(trainModel) then
+            return true
+        end
+    end
+
+    return false
+end
+
+local function DecorateTrain(vehicle)
+    local object = CreateObjectNoOffset(GetHashKey('mp006_p_veh_xmasnsteamer01x'), 0, 0, 0, false, false, false, false)
+    AttachEntityToEntity(object, vehicle, 0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, false, false, false, false, 0, true, false, false)
+    return object
+end
+
 -- Spawn and store trains server side
 RegisterNetEvent("vorp:SelectedCharacter", function()
 	TriggerServerEvent("BGS_Trains:ReturnServerTrains")
@@ -173,11 +233,19 @@ RegisterNetEvent("vorp:SelectedCharacter", function()
 			TriggerServerEvent("BGS_Trains:StoreServerTram", tram)
 		end
 		if Config.UseEastTrain then
-			EastTrainCreateVehicle(Config.EastTrain, loc, Config.EastTrainMaxSpeed)
+			if Config.UseChristmasTrainEast then
+				EastTrainCreateVehicle(christmasTrainHash, loc, Config.EastTrainMaxSpeed)
+			else
+				EastTrainCreateVehicle(Config.EastTrain, loc, Config.EastTrainMaxSpeed)
+			end
 			TriggerServerEvent("BGS_Trains:StoreServerTrainEast", eastTrain)
 		end
 		if Config.UseWestTrain then
-			WestTrainCreateVehicle(Config.WestTrain, loc3, Config.WestTrainMaxSpeed)
+			if Config.UseChristmasTrainWest then
+				WestTrainCreateVehicle(christmasTrainHash, loc3, Config.WestTrainMaxSpeed)
+			else
+				WestTrainCreateVehicle(Config.WestTrain, loc3, Config.WestTrainMaxSpeed)
+			end
 			TriggerServerEvent("BGS_Trains:StoreServerTrainWest", westTrain)
 		end
 	end
@@ -275,4 +343,23 @@ CreateThread(function()
 			end
 		end
 	end
+end)
+
+CreateThread(function()
+    while true do
+        Wait(100)
+
+		for vehicle in EnumerateVehicles() do
+			if IsTrain(vehicle) and not Trains[vehicle] then
+				Trains[vehicle] = DecorateTrain(vehicle)
+			end
+		end
+
+		for train, object in pairs(Trains) do
+			if not DoesEntityExist(train) then
+				DeleteEntity(object)
+				Trains[train] = nil
+			end
+		end
+    end
 end)

@@ -1,5 +1,8 @@
 Config = {}
 
+Config.UseChristmasTrainEast = true
+Config.UseChristmasTrainWest = false
+
 Config.UseEastTrain = true                              -- Use east line or not
 Config.UseWestTrain = true                              -- Use west line or not
 Config.UseTrams = true                                  -- Use tram or not
