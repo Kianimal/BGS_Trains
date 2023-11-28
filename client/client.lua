@@ -166,7 +166,7 @@ end
 RegisterNetEvent("vorp:SelectedCharacter", function()
 	TriggerServerEvent("BGS_Trains:ReturnServerTrains")
 	Wait(1000)
-	while train == nil and tram == nil do
+	while eastTrain == nil and tram == nil and westTrain == nil do
 		Wait(1000)
 		if Config.UseTrams then
 			TramCreateVehicle(Config.Trolley, loc2)
@@ -174,11 +174,11 @@ RegisterNetEvent("vorp:SelectedCharacter", function()
 		end
 		if Config.UseEastTrain then
 			EastTrainCreateVehicle(Config.EastTrain, loc, Config.EastTrainMaxSpeed)
-			TriggerServerEvent("BGS_Trains:StoreServerTrainEast", train)
+			TriggerServerEvent("BGS_Trains:StoreServerTrainEast", eastTrain)
 		end
 		if Config.UseWestTrain then
 			WestTrainCreateVehicle(Config.WestTrain, loc3, Config.WestTrainMaxSpeed)
-			TriggerServerEvent("BGS_Trains:StoreServerTrainWest", train)
+			TriggerServerEvent("BGS_Trains:StoreServerTrainWest", westTrain)
 		end
 	end
 end)
@@ -204,6 +204,11 @@ CreateThread(function()
 					end
 				end
 			end
+			if Citizen.InvokeNative(0xE887BD31D97793F6, eastTrain) then
+				Citizen.InvokeNative(0x3660BCAB3A6BB734, eastTrain)
+				Wait(Config.EastTrainStationWait*1000)
+				Citizen.InvokeNative(0x787E43477746876F, eastTrain)
+			end
 		end
 		if westTrain then
 			if not westBlipRendered then
@@ -211,16 +216,14 @@ CreateThread(function()
 			end
 			for i = 1, #Config.WestJunctions do
 				if GetDistanceBetweenCoords(GetEntityCoords(westTrain), Config.WestJunctions[i].coords) < 25 then
-					if Config.WestJunctions[i].trainTrack == -705539859 and Config.WestJunctions[i].junctionIndex == 2 then
-						Config.WestJunctions[i].enabled = Config.WestJunctions[i].enabled == 0 and 1 or 0
-						Citizen.InvokeNative(0xE6C5E2125EB210C1, Config.WestJunctions[i].trainTrack, Config.WestJunctions[i].junctionIndex, Config.WestJunctions[i].enabled)
-						Citizen.InvokeNative(0x3ABFA128F5BF5A70, Config.WestJunctions[i].trainTrack, Config.WestJunctions[i].junctionIndex, Config.WestJunctions[i].enabled)
-						Wait(45000)
-					else
-						Citizen.InvokeNative(0xE6C5E2125EB210C1, Config.WestJunctions[i].trainTrack, Config.WestJunctions[i].junctionIndex, Config.WestJunctions[i].enabled)
-						Citizen.InvokeNative(0x3ABFA128F5BF5A70, Config.WestJunctions[i].trainTrack, Config.WestJunctions[i].junctionIndex, Config.WestJunctions[i].enabled)
-					end
+					Citizen.InvokeNative(0xE6C5E2125EB210C1, Config.WestJunctions[i].trainTrack, Config.WestJunctions[i].junctionIndex, Config.WestJunctions[i].enabled)
+					Citizen.InvokeNative(0x3ABFA128F5BF5A70, Config.WestJunctions[i].trainTrack, Config.WestJunctions[i].junctionIndex, Config.WestJunctions[i].enabled)
 				end
+			end
+			if Citizen.InvokeNative(0xE887BD31D97793F6, westTrain) then
+				Citizen.InvokeNative(0x3660BCAB3A6BB734, westTrain)
+				Wait(Config.WestTrainStationWait*1000)
+				Citizen.InvokeNative(0x787E43477746876F, westTrain)
 			end
 		end
 	end

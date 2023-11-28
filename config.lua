@@ -1,14 +1,16 @@
 Config = {}
 
-Config.UseEastTrain = true
-Config.UseWestTrain = true
-Config.UseTrams = true
+Config.UseEastTrain = true                              -- Use east line or not
+Config.UseWestTrain = true                              -- Use west line or not
+Config.UseTrams = true                                  -- Use tram or not
 
-Config.EastTrainMaxSpeed = 10.0
-Config.EastTrainBlipName = "BGS East Line"
+Config.EastTrainMaxSpeed = 10.0                         -- Max speed for train
+Config.EastTrainBlipName = "BGS East Line"              -- Blip name for train
+Config.EastTrainStationWait = 30                        -- Time that train waits at a station (in seconds)
 
 Config.WestTrainMaxSpeed = 10.0
 Config.WestTrainBlipName = "BGS West Line"
+Config.WestTrainStationWait = 30
 
                                                         -- TROLLEY TYPES I HAVE FOUND (use hash value):
 Config.Trolley = 0xBF69518F                             --trolley_config (Cornwall) = 0xBF69518F,
@@ -23,7 +25,6 @@ Config.WestTrain = 0x10461E19                           -- bountyhunter_config =
                                                         -- gunslinger3_config = 0x3D72571D,
                                                         -- gunslinger4_config = 0x5AA369CA,
                                                         -- handcart_config = 0x3EDA466D,
-                                                        -- industry2_config = 0x767DEB32,
                                                         -- minecart_config = 0xC75AA08C,
                                                         -- prisoner_escort_config = 0x515E31ED,
                                                         -- trolley_config = 0xBF69518F,
