@@ -349,16 +349,25 @@ CreateThread(function()
     while true do
         Wait(100)
 
-		for vehicle in EnumerateVehicles() do
-			if IsTrain(vehicle) and not Trains[vehicle] then
-				Trains[vehicle] = DecorateTrain(vehicle)
+		if Config.UseChristmasTrainEast or Config.UseChristmasTrainWest then
+			for vehicle in EnumerateVehicles() do
+				if Config.UseChristmasTrainEast and vehicle == eastTrain then
+					if IsTrain(vehicle) and not Trains[vehicle] then
+						Trains[vehicle] = DecorateTrain(vehicle)
+					end
+				end
+				if Config.UseChristmasTrainWest and vehicle == westTrain then
+					if IsTrain(vehicle) and not Trains[vehicle] then
+						Trains[vehicle] = DecorateTrain(vehicle)
+					end
+				end
 			end
-		end
-
-		for train, object in pairs(Trains) do
-			if not DoesEntityExist(train) then
-				DeleteEntity(object)
-				Trains[train] = nil
+	
+			for train, object in pairs(Trains) do
+				if not DoesEntityExist(train) then
+					DeleteEntity(object)
+					Trains[train] = nil
+				end
 			end
 		end
     end
