@@ -1,11 +1,13 @@
 -- various globals
-local westTrain = nil
-local eastTrain = nil
-local tram = nil
+local westTrain = false
+local eastTrain = false
+local tram = false
 local westBlipRendered = false
 local eastBlipRendered = false
 local eastTrainDriver = nil
 local westTrainDriver = nil
+local eastTrainBartender = nil
+local westTrainBartender = nil
 local tramDriver = nil
 local Trains = {}
 local TrainModels = {
@@ -226,35 +228,48 @@ end
 -- Spawn and store trains server side
 if not Config.Debug then
 	RegisterNetEvent("vorp:SelectedCharacter", function()
-		TriggerServerEvent("BGS_Trains:ReturnServerTrains")
-		Wait(1000)
-		while eastTrain == nil and tram == nil and westTrain == nil and not Config.Debug do
-			Wait(1000)
-			if Config.UseTrams then
-				TramCreateVehicle(Config.Trolley, Config.tramLoc)
-				TriggerServerEvent("BGS_Trains:StoreServerTram", tram)
-			end
-			if Config.UseEastTrain then
-				if Config.UseChristmasTrainEast then
-					EastTrainCreateVehicle(christmasTrainHash, Config.eastLoc, Config.EastTrainMaxSpeed)
-				elseif Config.UseFancyTrainEast then
-					EastTrainCreateVehicle(0xCD2C7CA1, Config.eastLoc, Config.EastTrainMaxSpeed)
-				else
-					EastTrainCreateVehicle(Config.EastTrain, Config.eastLoc, Config.EastTrainMaxSpeed)
+		CreateThread(function ()
+			while true do
+				print("test")
+				Wait(1000)
+				if GetDistanceBetweenCoords(GetEntityCoords(PlayerPedId()), Config.eastLoc) < 150 and not eastTrain then
+					print("testTrain")
+					if Config.UseEastTrain then
+						if Config.UseChristmasTrainEast then
+							EastTrainCreateVehicle(christmasTrainHash, Config.eastLoc, Config.EastTrainMaxSpeed)
+							TriggerServerEvent("BGS_Trains:StoreServerTrainEast", eastTrain)
+						elseif Config.UseFancyTrainEast then
+							EastTrainCreateVehicle(0xCD2C7CA1, Config.eastLoc, Config.EastTrainMaxSpeed)
+							TriggerServerEvent("BGS_Trains:StoreServerTrainEast", eastTrain, eastTrainBartender)
+						else
+							EastTrainCreateVehicle(Config.EastTrain, Config.eastLoc, Config.EastTrainMaxSpeed)
+							TriggerServerEvent("BGS_Trains:StoreServerTrainEast", eastTrain)
+						end
+					end
 				end
-				TriggerServerEvent("BGS_Trains:StoreServerTrainEast", eastTrain)
-			end
-			if Config.UseWestTrain then
-				if Config.UseChristmasTrainWest then
-					WestTrainCreateVehicle(christmasTrainHash, Config.westLoc, Config.WestTrainMaxSpeed)
-				elseif Config.UseFancyTrainWest then
-					WestTrainCreateVehicle(0xCD2C7CA1, Config.westLoc, Config.WestTrainMaxSpeed)
-				else
-					WestTrainCreateVehicle(Config.WestTrain, Config.westLoc, Config.WestTrainMaxSpeed)
+				if GetDistanceBetweenCoords(GetEntityCoords(PlayerPedId()), Config.westLoc) < 150 and not westTrain then
+					if Config.UseWestTrain then
+						if Config.UseChristmasTrainWest then
+							WestTrainCreateVehicle(christmasTrainHash, Config.westLoc, Config.WestTrainMaxSpeed)
+							TriggerServerEvent("BGS_Trains:StoreServerTrainWest", westTrain)
+						elseif Config.UseFancyTrainWest then
+							WestTrainCreateVehicle(0xCD2C7CA1, Config.westLoc, Config.WestTrainMaxSpeed)
+							TriggerServerEvent("BGS_Trains:StoreServerTrainWest", westTrain, westTrainBartender)
+						else
+							WestTrainCreateVehicle(Config.WestTrain, Config.westLoc, Config.WestTrainMaxSpeed)
+							TriggerServerEvent("BGS_Trains:StoreServerTrainWest", westTrain)
+						end
+					end
 				end
-				TriggerServerEvent("BGS_Trains:StoreServerTrainWest", westTrain)
+				if GetDistanceBetweenCoords(GetEntityCoords(PlayerPedId()), Config.tramLoc) < 150 and not tram then
+					if Config.UseTrams then
+						TramCreateVehicle(Config.Trolley, Config.tramLoc)
+						TriggerServerEvent("BGS_Trains:StoreServerTram", tram)
+					end
+				end
+				TriggerServerEvent("BGS_Trains:ReturnServerTrains")
 			end
-		end
+		end)
 	end)
 end
 
@@ -411,12 +426,11 @@ if Config.UseFancyTrainEast then
 	CreateThread(function()
 		local deleted = false
 		local attached = false
+		local spawned = false
 		local propset
 		local propset2
 		local propsetHash
 		local propsetHash2
-		local barPropsetOnTrain
-		local sleeperPropsetOnTrain
 
 		while true do
 			Wait(1000)
@@ -456,25 +470,50 @@ if Config.UseFancyTrainEast then
 							Wait(1)
 						end
 
-						barPropsetOnTrain = Citizen.InvokeNative(0x9609DBDDE18FAD8C, barPropsHash, 0, 0, 0, carriage, 0, true, 0, true)
-						sleeperPropsetOnTrain = Citizen.InvokeNative(0x9609DBDDE18FAD8C, sleeperPropsHash, 0, 0, 0, carriage2, 0, true, 0, true)
+						local barPropsetOnTrain = Citizen.InvokeNative(0x9609DBDDE18FAD8C, barPropsHash, 0, 0, 0, carriage, 0, true, 0, true)
+						local sleeperPropsetOnTrain = Citizen.InvokeNative(0x9609DBDDE18FAD8C, sleeperPropsHash, 0, 0, 0, carriage2, 0, true, 0, true)
+
 						attached = true
+					end
+
+					if not spawned then
+						local coords = GetEntityCoords(carriage)
+	
+						local scenario_type_hash = joaat("WORLD_HUMAN_BARTENDER_CLEAN_GLASS")
+						local scenario_duration = -1  -- (1000 = 1 second, -1 = forever)
+						local must_play_enter_anim = true
+						local optional_conditional_anim_hash = joaat("WORLD_HUMAN_BARTENDER_CLEAN_GLASS_MALE_B")  -- 0 = play random conditional anim. Every conditional anim has requirements to play it. If requirements are not met, ped plays random allowed conditional anim or can be stuck. For example, this scenario type have possible conditional anim "WORLD_HUMAN_LEAN_BACK_WALL_SMOKING_MALE_D", but it can not be played by player, because condition is set to NOT be CAIConditionIsPlayer (check file amb_rest.meta and amb_rest_CA.meta with OPENIV to clarify requirements). 
+						local unknown_5 = -1.0
+						local unknown_6 = 0
+	
+						eastTrainBartender = CreatePed(518339740, coords.x+0.85, coords.y+1.25, coords.z+0.5, GetEntityHeading(carriage), true, false, false, false)
+						SetPedRandomComponentVariation(eastTrainBartender, 0)
+						Citizen.InvokeNative(0xA5C38736C426FCB8, eastTrainBartender, true)
+						Citizen.InvokeNative(0x9F8AA94D6D97DBF4, eastTrainBartender, true)
+						Citizen.InvokeNative(0x63F58F7C80513AAD, eastTrainBartender, false)
+						Citizen.InvokeNative(0x7A6535691B477C48, eastTrainBartender, false)
+						SetBlockingOfNonTemporaryEvents(eastTrainBartender, true)
+						SetEntityAsMissionEntity(eastTrainBartender, true, true)
+						SetEntityCanBeDamaged(eastTrainBartender, false)
+	
+						Citizen.InvokeNative(0x524B54361229154F, eastTrainBartender, scenario_type_hash, scenario_duration, must_play_enter_anim, optional_conditional_anim_hash, unknown_5, unknown_6)
+						spawned = true
 					end
 
 					Citizen.InvokeNative(0xB1964A83B345B4AB, barPropsHash)
 					Citizen.InvokeNative(0xB1964A83B345B4AB, sleeperPropsHash)
 
+					Citizen.InvokeNative(0x550CE392A4672412, carriage3, 9, true, true)			-- Open fancy cabin doors
+					Citizen.InvokeNative(0x550CE392A4672412, carriage3, 10, true, true)			-- Open fancy cabin doors
+					Citizen.InvokeNative(0x550CE392A4672412, carriage3, 11, true, true)			-- Open fancy cabin doors
+
+					Citizen.InvokeNative(0x550CE392A4672412, carriage4, 9, true, true)			-- Open fancy cabin doors
+					Citizen.InvokeNative(0x550CE392A4672412, carriage4, 10, true, true)			-- Open fancy cabin doors
+					Citizen.InvokeNative(0x550CE392A4672412, carriage4, 11, true, true)			-- Open fancy cabin doors
+
 				else
 					attached = false
 				end
-
-				Citizen.InvokeNative(0x550CE392A4672412, carriage3, 9, true, true)			-- Open fancy cabin doors
-				Citizen.InvokeNative(0x550CE392A4672412, carriage3, 10, true, true)			-- Open fancy cabin doors
-				Citizen.InvokeNative(0x550CE392A4672412, carriage3, 11, true, true)			-- Open fancy cabin doors
-
-				Citizen.InvokeNative(0x550CE392A4672412, carriage4, 9, true, true)			-- Open fancy cabin doors
-				Citizen.InvokeNative(0x550CE392A4672412, carriage4, 10, true, true)			-- Open fancy cabin doors
-				Citizen.InvokeNative(0x550CE392A4672412, carriage4, 11, true, true)			-- Open fancy cabin doors
 				
 			end
 		end
@@ -489,12 +528,10 @@ if Config.UseFancyTrainWest then
 		local propset2
 		local propsetHash
 		local propsetHash2
-		local barPropsetOnTrain
-		local sleeperPropsetOnTrain
 
 		while true do
 			Wait(1000)
-			if eastTrain then
+			if westTrain then
 
 				local carriage = Citizen.InvokeNative(0xD0FB093A4CDB932C, westTrain, 3)
 				local carriage2 = Citizen.InvokeNative(0xD0FB093A4CDB932C, westTrain, 4)
@@ -516,42 +553,98 @@ if Config.UseFancyTrainWest then
 						Citizen.InvokeNative(0x3BCF32FF37EA9F1D, carriage2)
 						deleted = true
 					end
-					local request = Citizen.InvokeNative(0xF3DE57A46D5585E9, barPropsHash)
-					local request2 = Citizen.InvokeNative(0xF3DE57A46D5585E9, sleeperPropsHash)
-
-					while not Citizen.InvokeNative(0x48A88FC684C55FDC, barPropsHash) do
-						Wait(1)
-					end
-
-					while not Citizen.InvokeNative(0x48A88FC684C55FDC, sleeperPropsHash) do
-						Wait(1)
-					end
 
 					if not attached then
-						barPropsetOnTrain = Citizen.InvokeNative(0x9609DBDDE18FAD8C, barPropsHash, 0, 0, 0, carriage, 0, true, 0, true)
-						sleeperPropsetOnTrain = Citizen.InvokeNative(0x9609DBDDE18FAD8C, sleeperPropsHash, 0, 0, 0, carriage2, 0, true, 0, true)
+
+						local request = Citizen.InvokeNative(0xF3DE57A46D5585E9, barPropsHash)
+						local request2 = Citizen.InvokeNative(0xF3DE57A46D5585E9, sleeperPropsHash)
+
+						while not Citizen.InvokeNative(0x48A88FC684C55FDC, barPropsHash) do
+							Wait(1)
+						end
+
+						while not Citizen.InvokeNative(0x48A88FC684C55FDC, sleeperPropsHash) do
+							Wait(1)
+						end
+
+						local barPropsetOnTrain = Citizen.InvokeNative(0x9609DBDDE18FAD8C, barPropsHash, 0, 0, 0, carriage, 0, true, 0, true)
+						local sleeperPropsetOnTrain = Citizen.InvokeNative(0x9609DBDDE18FAD8C, sleeperPropsHash, 0, 0, 0, carriage2, 0, true, 0, true)
+						local coords = GetEntityCoords(carriage)
+						westTrainBartender = CreatePed(518339740, coords.x, coords.y+1.25, coords.z+0.5, GetEntityHeading(carriage)-90, true, false, false, false)
+						SetPedRandomComponentVariation(westTrainBartender, 0)
+						FreezeEntityPosition(westTrainBartender, true)
+						Citizen.InvokeNative(0xA5C38736C426FCB8, westTrainBartender, true)
+						Citizen.InvokeNative(0x9F8AA94D6D97DBF4, westTrainBartender, true)
+						Citizen.InvokeNative(0x63F58F7C80513AAD, westTrainBartender, false)
+						Citizen.InvokeNative(0x7A6535691B477C48, westTrainBartender, false)
+						SetBlockingOfNonTemporaryEvents(westTrainBartender, true)
+						SetEntityAsMissionEntity(westTrainBartender, true, true)
+						SetEntityCanBeDamaged(westTrainBartender, false)
+
 						attached = true
 					end
 
 					Citizen.InvokeNative(0xB1964A83B345B4AB, barPropsHash)
 					Citizen.InvokeNative(0xB1964A83B345B4AB, sleeperPropsHash)
 
+					Citizen.InvokeNative(0x550CE392A4672412, carriage3, 9, true, true)			-- Open fancy cabin doors
+					Citizen.InvokeNative(0x550CE392A4672412, carriage3, 10, true, true)			-- Open fancy cabin doors
+					Citizen.InvokeNative(0x550CE392A4672412, carriage3, 11, true, true)			-- Open fancy cabin doors
+	
+					Citizen.InvokeNative(0x550CE392A4672412, carriage4, 9, true, true)			-- Open fancy cabin doors
+					Citizen.InvokeNative(0x550CE392A4672412, carriage4, 10, true, true)			-- Open fancy cabin doors
+					Citizen.InvokeNative(0x550CE392A4672412, carriage4, 11, true, true)			-- Open fancy cabin doors
+
 				else
 					attached = false
 				end
-
-				Citizen.InvokeNative(0x550CE392A4672412, carriage3, 9, true, true)			-- Open fancy cabin doors
-				Citizen.InvokeNative(0x550CE392A4672412, carriage3, 10, true, true)			-- Open fancy cabin doors
-				Citizen.InvokeNative(0x550CE392A4672412, carriage3, 11, true, true)			-- Open fancy cabin doors
-
-				Citizen.InvokeNative(0x550CE392A4672412, carriage4, 9, true, true)			-- Open fancy cabin doors
-				Citizen.InvokeNative(0x550CE392A4672412, carriage4, 10, true, true)			-- Open fancy cabin doors
-				Citizen.InvokeNative(0x550CE392A4672412, carriage4, 11, true, true)			-- Open fancy cabin doors
 				
 			end
 		end
 	end)
 end
+
+-- CreateThread(function ()
+-- 	if Config.UseFancyTrainEast then
+-- 		local registered = false
+-- 		local inMenu = false
+-- 		local prompt
+-- 		local position
+-- 		while true do
+-- 			Wait(10)
+
+-- 			if eastTrainBartender and not registered then
+-- 				Wait(10)
+-- 				-- creates a prompt with text "My prompt" with R button as control.
+-- 				prompt = PromptRegisterBegin()
+-- 				PromptSetControlAction(prompt, GetHashKey("INPUT_CONTEXT_X")) -- R key
+-- 				PromptSetText(prompt, CreateVarString(10, "LITERAL_STRING", "Buy"))
+-- 				PromptSetHoldMode(prompt, 1000)
+-- 				PromptRegisterEnd(prompt)
+
+-- 				registered = true
+-- 			end
+
+-- 			if prompt and eastTrainBartender and registered then
+-- 				-- _UI_PROMPT_CONTEXT_SET_POINT
+-- 				position = GetEntityCoords(eastTrainBartender) -- rhodes station
+-- 				Citizen.InvokeNative(0xAE84C5EE2C384FB3, prompt, position.x, position.y, position.z)
+
+-- 				local radius = 2.0
+-- 				-- _UI_PROMPT_CONTEXT_SET_RADIUS
+-- 				Citizen.InvokeNative(0x0C718001B77CA468, prompt, radius)
+-- 			end
+
+-- 			if PromptHasHoldModeCompleted(prompt) then
+-- 				inMenu = true
+-- 			end
+
+-- 			if inMenu then
+-- 				PromptSetVisible(prompt, false)
+-- 			end
+-- 		end
+-- 	end
+-- end)
 
 if Config.Debug then
 

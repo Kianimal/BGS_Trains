@@ -9,12 +9,14 @@ Config.westLoc = vector3(-3766.98, -2787.98, -14.44)    -- Spawn location for we
 Config.UseChristmasTrainEast = false                    -- Whether or not to use Christmas trains
 Config.UseChristmasTrainWest = false
 
-Config.UseFancyTrainEast = true                         -- Whether or not to use fancy trains (WORK IN PROGRESS - NOT STABLE)
+Config.UseFancyTrainEast = true                         -- Whether or not to use fancy trains
 Config.UseFancyTrainWest = false
 
 Config.UseEastTrain = true                              -- Use east line or not
 Config.UseWestTrain = true                              -- Use west line or not
 Config.UseTrams = true                                  -- Use tram or not
+
+Config.EnablePassengers = true                          -- Enable passengers or not
 
 Config.EastTrainMaxSpeed = 10.0                         -- Max speed for train
 Config.EastTrainBlipName = "BGS East Line"              -- Blip name for train

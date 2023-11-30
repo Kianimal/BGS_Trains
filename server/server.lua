@@ -1,5 +1,7 @@
 local eastTrain = nil
 local westTrain = nil
+local eastBartender = nil
+local westBartender = nil
 local tram = nil
 
 RegisterServerEvent("BGS_Trains:StoreServerTram")
@@ -8,19 +10,21 @@ AddEventHandler("BGS_Trains:StoreServerTram", function(clientTram)
 end)
 
 RegisterServerEvent("BGS_Trains:StoreServerTrainEast")
-AddEventHandler("BGS_Trains:StoreServerTrainEast", function(clientTrain)
+AddEventHandler("BGS_Trains:StoreServerTrainEast", function(clientTrain, bartender)
 	eastTrain = clientTrain
+	eastBartender = bartender
 end)
 
 RegisterServerEvent("BGS_Trains:StoreServerTrainWest")
-AddEventHandler("BGS_Trains:StoreServerTrainEast", function(clientTrain)
+AddEventHandler("BGS_Trains:StoreServerTrainEast", function(clientTrain, bartender)
 	westTrain = clientTrain
+	westBartender = bartender
 end)
 
 RegisterServerEvent("BGS_Trains:ReturnServerTrains")
 AddEventHandler("BGS_Trains:ReturnServerTrains", function()
 	local _source = source
-	TriggerClientEvent("BGS_Trains:GetServerTrains", _source, eastTrain, westTrain, tram)
+	TriggerClientEvent("BGS_Trains:GetServerTrains", _source, eastTrain, westTrain, tram, eastBartender, westBartender)
 end)
 
 Citizen.CreateThread(function()
