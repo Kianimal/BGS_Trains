@@ -438,8 +438,8 @@ if Config.UseFancyTrainEast then
 						while not (Citizen.InvokeNative(0x48A88FC684C55FDC, propsetHash) and Citizen.InvokeNative(0x48A88FC684C55FDC, propsetHash2)) do
 							Wait(1)
 						end
-						Citizen.InvokeNative(0x58AC173A55D9D7B4, propset, true, true)
-						Citizen.InvokeNative(0x58AC173A55D9D7B4, propset2, true, true)
+						Citizen.InvokeNative(0x3BCF32FF37EA9F1D, carriage)
+						Citizen.InvokeNative(0x3BCF32FF37EA9F1D, carriage2)
 						deleted = true
 					end
 

@@ -2,14 +2,14 @@ Config = {}
 
 Config.Debug = false                                    -- Spawns the train in their location and stops them permanently (doesn't spawn west train). Also deletes trains on script ensure.
 
-Config.eastLoc = vector3(653.62, 1614.2, 187.83)        -- Spawn location for east line
+Config.eastLoc = vector3(2598.31, -1477.08, 45.87)      -- Spawn location for east line
 Config.tramLoc = vector3(2608.38, -1203.12, 53.16)      -- Spawn location for tram line
 Config.westLoc = vector3(-3766.98, -2787.98, -14.44)    -- Spawn location for west line
 
 Config.UseChristmasTrainEast = false                    -- Whether or not to use Christmas trains
 Config.UseChristmasTrainWest = false
 
-Config.UseFancyTrainEast = false                         -- Whether or not to use fancy trains (WORK IN PROGRESS - NOT STABLE)
+Config.UseFancyTrainEast = true                         -- Whether or not to use fancy trains (WORK IN PROGRESS - NOT STABLE)
 Config.UseFancyTrainWest = false
 
 Config.UseEastTrain = true                              -- Use east line or not
