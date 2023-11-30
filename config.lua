@@ -16,6 +16,12 @@ Config.UseEastTrain = true                              -- Use east line or not
 Config.UseWestTrain = true                              -- Use west line or not
 Config.UseTrams = true                                  -- Use tram or not
 
+Config.UseRandomJunctions = true                        -- Use random junctions or not
+Config.RandomJunctionstime = 900000                     -- Time between random junctions (in milliseconds) 15 minutes = 900000
+Config.RandomizeWestJunctions = true                    -- Randomize west junctions or not
+Config.RandomizeEastJunctions = true                    -- Randomize east junctions or not
+Config.RandomizeTramJunctions = true                    -- Randomize tram junctions or not
+
 Config.EastTrainMaxSpeed = 10.0                         -- Max speed for train
 Config.EastTrainBlipName = "BGS East Line"              -- Blip name for train
 Config.EastTrainStationWait = 30                        -- Time that train waits at a station (in seconds)

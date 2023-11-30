@@ -258,6 +258,43 @@ if not Config.Debug then
 	end)
 end
 
+-- Function for randomizing the junctions
+function RandomizeJunctionsEnabled(junctionsList)
+    if Config.UseRandomJunctions then  -- Check whether randomization is activated
+        for _, junction in ipairs(junctionsList) do
+            local NullOne = math.random(1, 100)
+            if NullOne > 50 then
+                junction.enabled = 0
+            else
+                junction.enabled = 1
+            end
+        end
+    end
+end
+
+-- Main thread that checks whether junctions should be randomized
+CreateThread(function()
+    -- End this thread immediately if randomization is not activated
+    if not Config.UseRandomJunctions then
+        return
+    end
+
+    while true do
+        Wait(Config.RandomJunctionstime)  -- Wait for the specified time
+
+        -- Check which junctions are to be randomized
+        if Config.RandomizeWestJunctions then
+            RandomizeJunctionsEnabled(Config.WestJunctions)
+        end
+        if Config.RandomizeEastJunctions then
+            RandomizeJunctionsEnabled(Config.EastJunctions)
+        end
+        if Config.RandomizeTramJunctions then
+            RandomizeJunctionsEnabled(Config.RouteOneTramSwitches)
+        end
+    end
+end)
+
 -- Handle west train shit
 CreateThread(function()
 	local stopped = false
