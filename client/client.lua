@@ -52,7 +52,7 @@ local function WestTrainCreateVehicle(trainModel, loc, speed)
 		end
 	end
 
-	westTrain = Citizen.InvokeNative(0xC239DBD9A57D2A71, trainModel, loc.x, loc.y, loc.z, false, false, true, true)
+	westTrain = Citizen.InvokeNative(0xC239DBD9A57D2A71, trainModel, loc.x, loc.y, loc.z, false, Config.EnablePassengers, true, true)
 	SetTrainSpeed(westTrain, speed)
 	SetTrainCruiseSpeed(westTrain, speed)
 	Citizen.InvokeNative(0x9F29999DFDF2AEB8, westTrain, speed)
@@ -98,7 +98,7 @@ local function EastTrainCreateVehicle(trainModel, loc, speed)
 		end
 	end
 
-	eastTrain = Citizen.InvokeNative(0xC239DBD9A57D2A71, trainModel, loc.x, loc.y, loc.z, false, false, true, true)
+	eastTrain = Citizen.InvokeNative(0xC239DBD9A57D2A71, trainModel, loc.x, loc.y, loc.z, false, Config.EnablePassengers, true, true)
 	SetTrainSpeed(eastTrain, speed)
 	SetTrainCruiseSpeed(eastTrain, speed)
 	Citizen.InvokeNative(0x9F29999DFDF2AEB8, eastTrain, speed)
@@ -144,7 +144,7 @@ local function TramCreateVehicle(trainModel, loc)
 		end
 	end
 
-	tram = Citizen.InvokeNative(0xC239DBD9A57D2A71, trainModel, loc, true, false, true, true)
+	tram = Citizen.InvokeNative(0xC239DBD9A57D2A71, trainModel, loc, true, Config.EnablePassengers, true, true)
 	SetTrainSpeed(tram, 2.0)
 	Citizen.InvokeNative(0x4182C037AA1F0091, tram, true) 					-- Set train stops for stations
 	Citizen.InvokeNative(0x8EC47DD4300BF063, tram, 0.0) 					-- Set train offset for station
@@ -270,6 +270,43 @@ if not Config.Debug then
 		end)
 	end)
 end
+
+-- Function for randomizing the junctions
+function RandomizeJunctionsEnabled(junctionsList)
+    if Config.UseRandomJunctions then  -- Check whether randomization is activated
+        for _, junction in ipairs(junctionsList) do
+            local NullOne = math.random(1, 100)
+            if NullOne > 50 then
+                junction.enabled = 0
+            else
+                junction.enabled = 1
+            end
+        end
+    end
+end
+
+-- Main thread that checks whether junctions should be randomized
+CreateThread(function()
+    -- End this thread immediately if randomization is not activated
+    if not Config.UseRandomJunctions then
+        return
+    end
+
+    while true do
+        Wait(Config.RandomJunctionstime)  -- Wait for the specified time
+
+        -- Check which junctions are to be randomized
+        if Config.RandomizeWestJunctions then
+            RandomizeJunctionsEnabled(Config.WestJunctions)
+        end
+        if Config.RandomizeEastJunctions then
+            RandomizeJunctionsEnabled(Config.EastJunctions)
+        end
+        if Config.RandomizeTramJunctions then
+            RandomizeJunctionsEnabled(Config.RouteOneTramSwitches)
+        end
+    end
+end)
 
 -- Handle west train shit
 CreateThread(function()
