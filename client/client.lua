@@ -230,10 +230,8 @@ if not Config.Debug then
 	RegisterNetEvent("vorp:SelectedCharacter", function()
 		CreateThread(function ()
 			while true do
-				print("test")
 				Wait(1000)
 				if GetDistanceBetweenCoords(GetEntityCoords(PlayerPedId()), Config.eastLoc) < 150 and not eastTrain then
-					print("testTrain")
 					if Config.UseEastTrain then
 						if Config.UseChristmasTrainEast then
 							EastTrainCreateVehicle(christmasTrainHash, Config.eastLoc, Config.EastTrainMaxSpeed)
