@@ -1,7 +1,7 @@
 -- various globals
-local westTrain = false
-local eastTrain = false
-local tram = false
+local westTrain = nil
+local eastTrain = nil
+local tram = nil
 local westBlipRendered = false
 local eastBlipRendered = false
 local eastTrainDriver = nil
@@ -547,7 +547,7 @@ if Config.UseFancyTrainEast then
 						attached = true
 					end
 
-					if not spawned then
+					if not spawned and Config.UseEastTrainBartender then
 						local coords = GetEntityCoords(carriage)
 
 						local scenario_type_hash = joaat("WORLD_HUMAN_BARTENDER_CLEAN_GLASS")
@@ -622,7 +622,7 @@ if Config.UseFancyTrainEast then
 						attached = true
 					end
 
-					if not spawned then
+					if not spawned and Config.UseEastTrainBartender then
 						local coords = GetEntityCoords(carriage)
 
 						local scenario_type_hash = joaat("WORLD_HUMAN_BARTENDER_CLEAN_GLASS")
@@ -681,7 +681,7 @@ if Config.UseFancyTrainWest then
 
 		while true do
 			Wait(1000)
-			if eastTrain then
+			if westTrain then
 
 				local carriage = Citizen.InvokeNative(0xD0FB093A4CDB932C, westTrain, 3)
 				local carriage2 = Citizen.InvokeNative(0xD0FB093A4CDB932C, westTrain, 4)
@@ -723,7 +723,7 @@ if Config.UseFancyTrainWest then
 						attached = true
 					end
 
-					if not spawned then
+					if not spawned and Config.UseWestTrainBartender then
 						local coords = GetEntityCoords(carriage)
 
 						local scenario_type_hash = joaat("WORLD_HUMAN_BARTENDER_CLEAN_GLASS")
@@ -733,8 +733,15 @@ if Config.UseFancyTrainWest then
 						local unknown_5 = -1.0
 						local unknown_6 = 0
 
+						RequestModel(518339740)
+
+						while not HasModelLoaded(518339740) do
+							Wait(10)
+						end
+
 						westTrainBartender = CreatePed(518339740, coords.x+0.85, coords.y+1.25, coords.z+0.5, GetEntityHeading(carriage), true, false, false, false)
 						SetPedRandomComponentVariation(westTrainBartender, 0)
+
 						Citizen.InvokeNative(0xA5C38736C426FCB8, westTrainBartender, true)
 						Citizen.InvokeNative(0x9F8AA94D6D97DBF4, westTrainBartender, true)
 						Citizen.InvokeNative(0x63F58F7C80513AAD, westTrainBartender, false)
@@ -743,13 +750,8 @@ if Config.UseFancyTrainWest then
 						SetEntityAsMissionEntity(westTrainBartender, true, true)
 						SetEntityCanBeDamaged(westTrainBartender, false)
 
-						if Config.UseNetwork then
-							NetworkRegisterEntityAsNetworked(westTrainBartender)
-						end
-
 						Citizen.InvokeNative(0x524B54361229154F, westTrainBartender, scenario_type_hash, scenario_duration, must_play_enter_anim, optional_conditional_anim_hash, unknown_5, unknown_6)
 						spawned = true
-						TriggerServerEvent("BGS_Trains:StoreServerTrainWest", westTrain, westTrainBartender)
 					end
 
 					Citizen.InvokeNative(0xB1964A83B345B4AB, barPropsHash)
@@ -798,7 +800,7 @@ if Config.UseFancyTrainWest then
 						attached = true
 					end
 
-					if not spawned then
+					if not spawned and Config.UseWestTrainBartender then
 						local coords = GetEntityCoords(carriage)
 
 						local scenario_type_hash = joaat("WORLD_HUMAN_BARTENDER_CLEAN_GLASS")
@@ -818,9 +820,7 @@ if Config.UseFancyTrainWest then
 						SetEntityAsMissionEntity(westTrainBartender, true, true)
 						SetEntityCanBeDamaged(westTrainBartender, false)
 
-						if Config.UseNetwork then
-							NetworkRegisterEntityAsNetworked(westTrainBartender)
-						end
+						NetworkRegisterEntityAsNetworked(westTrainBartender)
 
 						Citizen.InvokeNative(0x524B54361229154F, westTrainBartender, scenario_type_hash, scenario_duration, must_play_enter_anim, optional_conditional_anim_hash, unknown_5, unknown_6)
 						spawned = true
@@ -837,6 +837,10 @@ if Config.UseFancyTrainWest then
 					Citizen.InvokeNative(0x550CE392A4672412, carriage4, 9, true, true)			-- Open fancy cabin doors
 					Citizen.InvokeNative(0x550CE392A4672412, carriage4, 10, true, true)			-- Open fancy cabin doors
 					Citizen.InvokeNative(0x550CE392A4672412, carriage4, 11, true, true)			-- Open fancy cabin doors
+
+					if not Citizen.InvokeNative(0xE887BD31D97793F6, westTrain) then
+						Citizen.InvokeNative(0x787E43477746876F, westTrain)
+					end
 				end
 				
 			end
@@ -904,6 +908,17 @@ if Config.Debug then
 		TriggerServerEvent("BGS_Trains:StoreServerTrainEast", eastTrain)
 	end
 
+	if Config.UseWestTrain then
+		if Config.UseChristmasTrainWest then
+			WestTrainCreateVehicle(christmasTrainHash, Config.westLoc, Config.WestTrainMaxSpeed)
+		elseif Config.UseFancyTrainWest then
+			WestTrainCreateVehicle(0xCD2C7CA1, Config.westLoc, Config.WestTrainMaxSpeed)
+		else
+			WestTrainCreateVehicle(Config.WestTrain, Config.westLoc, Config.WestTrainMaxSpeed)
+		end
+		TriggerServerEvent("BGS_Trains:StoreServerTrainWest", westTrain)
+	end
+
 	AddEventHandler('onResourceStop', function(resourceName)
 		if GetCurrentResourceName() == resourceName then
 			if Config.UseChristmasTrainEast or Config.UseChristmasTrainWest then
@@ -917,18 +932,28 @@ if Config.Debug then
 				NetworkRequestControlOfEntity(eastTrainDriver)
 				NetworkRequestControlOfEntity(tramDriver)
 			end
-			DeleteEntity(westTrain)
-			DeleteEntity(eastTrain)
-			DeleteEntity(tram)
-			DeleteEntity(westTrainDriver)
-			DeleteEntity(eastTrainDriver)
-			DeleteEntity(tramDriver)
-			eastTrain = nil
-			westTrain = nil
-			tram = nil
-			eastTrainDriver = nil
-			westTrainDriver = nil
-			tramDriver = nil
+			print(westTrain)
+			if westTrain then
+				westTrain = nil
+				westTrainDriver = nil
+				DeleteEntity(westTrain)
+				DeleteEntity(westTrainDriver)
+			end
+			if eastTrain then
+				eastTrain = nil
+				eastTrainDriver = nil
+				DeleteEntity(eastTrain)
+				DeleteEntity(eastTrainDriver)
+			end
+			if tram then
+				tram = nil
+				tramDriver = nil
+				DeleteEntity(tram)
+				DeleteEntity(tramDriver)
+			end
+			
+			
+			
 		end
 	end)
 

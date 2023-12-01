@@ -20,6 +20,9 @@ Config.UseChristmasTrainWest = false
 Config.UseFancyTrainEast = true                         -- Whether or not to use fancy trains - will spawn a custom made train that includes a bar car (with bartender), a sleeper cabin, and luxury seating cabins.
 Config.UseFancyTrainWest = true
 
+Config.UseEastTrainBartender = false                    -- Whether or not to use the east train bartender (WORK IN PROGRESS)
+Config.UseWestTrainBartender = false                    -- Same as above but for west train
+
 Config.EnablePassengers = true                          -- Enable passengers or not
 
 Config.UseRandomJunctions = false                       -- Use random junctions or not
