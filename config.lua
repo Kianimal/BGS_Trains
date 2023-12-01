@@ -2,6 +2,8 @@ Config = {}
 
 Config.Debug = false                                    -- Spawns the train in their location and stops them permanently (doesn't spawn west train). Also deletes trains on script ensure.
 
+Config.UseNetwork = false                               -- Whether to use  networked trains or not. If you are having problems with trains syncing and spawning correctly, set this to false.
+
 Config.eastLoc = vector3(2598.31, -1477.08, 45.87)      -- Spawn location for east line
 Config.tramLoc = vector3(2608.38, -1203.12, 53.16)      -- Spawn location for tram line
 Config.westLoc = vector3(-3766.98, -2787.98, -14.44)    -- Spawn location for west line
@@ -17,11 +19,12 @@ Config.UseWestTrain = true                              -- Use west line or not
 Config.UseTrams = true                                  -- Use tram or not
 
 Config.EnablePassengers = true                          -- Enable passengers or not
-Config.UseRandomJunctions = true                        -- Use random junctions or not
+
+Config.UseRandomJunctions = false                       -- Use random junctions or not
 Config.RandomJunctionstime = 900000                     -- Time between random junctions (in milliseconds) 15 minutes = 900000
-Config.RandomizeWestJunctions = true                    -- Randomize west junctions or not
-Config.RandomizeEastJunctions = true                    -- Randomize east junctions or not
-Config.RandomizeTramJunctions = true                    -- Randomize tram junctions or not
+Config.RandomizeWestJunctions = false                   -- Randomize west junctions or not
+Config.RandomizeEastJunctions = false                   -- Randomize east junctions or not
+Config.RandomizeTramJunctions = false                   -- Randomize tram junctions or not
 
 Config.EastTrainMaxSpeed = 10.0                         -- Max speed for train
 Config.EastTrainBlipName = "BGS East Line"              -- Blip name for train

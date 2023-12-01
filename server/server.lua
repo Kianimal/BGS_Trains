@@ -1,8 +1,11 @@
 local eastTrain = nil
 local westTrain = nil
+local tram = nil
+
 local eastBartender = nil
 local westBartender = nil
-local tram = nil
+
+local players = {}
 
 RegisterServerEvent("BGS_Trains:StoreServerTram")
 AddEventHandler("BGS_Trains:StoreServerTram", function(clientTram)
@@ -22,34 +25,36 @@ AddEventHandler("BGS_Trains:StoreServerTrainEast", function(clientTrain, bartend
 end)
 
 RegisterServerEvent("BGS_Trains:ReturnServerTrains")
-AddEventHandler("BGS_Trains:ReturnServerTrains", function()
+AddEventHandler("BGS_Trains:ReturnServerTrains", function(addToList)
 	local _source = source
+	if addToList then
+		table.insert(players, _source)
+	end
 	TriggerClientEvent("BGS_Trains:GetServerTrains", _source, eastTrain, westTrain, tram, eastBartender, westBartender)
 end)
 
-Citizen.CreateThread(function()
-	local hasPlayers
-	while true do
-		Wait(5000)
-		hasPlayers = false
-		local peds = GetAllPeds()
-		for index, ped in ipairs(peds) do
-			if IsPedAPlayer(ped) then
-				hasPlayers = true
-			end
-		end
-		if not hasPlayers then
-			eastTrain = nil
-			westTrain = nil
-			tram = nil
+RegisterServerEvent("BGS_Trains:UpdateTrainsAllPlayers", function ()
+	local peds = GetAllPeds()
+	for index, ped in ipairs(peds) do
+		if IsPedAPlayer(ped) then
+			TriggerClientEvent("BGS_Trains:GetServerTrains", ped, eastTrain, westTrain, tram, eastBartender, westBartender)
 		end
 	end
 end)
 
-AddEventHandler('onResourceStop', function(resourceName)
-	if GetCurrentResourceName() == resourceName then
-        eastTrain = nil
+AddEventHandler("playerDropped", function(reason)
+	local _source = source
+	for index, player in ipairs(players) do
+		if player == _source then
+			table.remove(players, index)
+			break
+		end
+	end
+	if #players < 1 then
+		eastTrain = nil
 		westTrain = nil
+		eastBartender = nil
+		westBartender = nil
 		tram = nil
 	end
 end)

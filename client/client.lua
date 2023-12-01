@@ -81,8 +81,10 @@ local function WestTrainCreateVehicle(trainModel, loc, speed)
 	SetEntityCanBeDamaged(trainDriverHandle, false)
 
 	-- Network the train and driver
-	NetworkRegisterEntityAsNetworked(westTrain)
-	NetworkRegisterEntityAsNetworked(trainDriverHandle)
+	if Config.UseNetwork then
+		NetworkRegisterEntityAsNetworked(westTrain)
+		NetworkRegisterEntityAsNetworked(trainDriverHandle)
+	end
 
 end
 
@@ -127,8 +129,10 @@ local function EastTrainCreateVehicle(trainModel, loc, speed)
 	SetEntityCanBeDamaged(trainDriverHandle, false)
 
 	-- Network the train and driver
-	NetworkRegisterEntityAsNetworked(eastTrain)
-	NetworkRegisterEntityAsNetworked(trainDriverHandle)
+	if Config.UseNetwork then
+		NetworkRegisterEntityAsNetworked(eastTrain)
+		NetworkRegisterEntityAsNetworked(trainDriverHandle)
+	end
 
 end
 
@@ -165,8 +169,10 @@ local function TramCreateVehicle(trainModel, loc)
 	SetBlockingOfNonTemporaryEvents(trainDriverHandle, true)
 
 	-- Network the train and driver
-	NetworkRegisterEntityAsNetworked(tram)
-	NetworkRegisterEntityAsNetworked(trainDriverHandle)
+	if Config.UseNetwork then
+		NetworkRegisterEntityAsNetworked(tram)
+		NetworkRegisterEntityAsNetworked(trainDriverHandle)
+	end
 
 end
 
@@ -229,10 +235,22 @@ end
 if not Config.Debug then
 	RegisterNetEvent("vorp:SelectedCharacter", function()
 		CreateThread(function ()
+			TriggerServerEvent("BGS_Trains:ReturnServerTrains", true)
 			while true do
 				Wait(1000)
-				if GetDistanceBetweenCoords(GetEntityCoords(PlayerPedId()), Config.eastLoc) < 150 and not eastTrain then
-					if Config.UseEastTrain then
+				if Config.UseEastTrain and not eastTrain then
+					if Config.UseNetwork then
+						if Config.UseChristmasTrainEast then
+							EastTrainCreateVehicle(christmasTrainHash, Config.eastLoc, Config.EastTrainMaxSpeed)
+							TriggerServerEvent("BGS_Trains:StoreServerTrainEast", eastTrain)
+						elseif Config.UseFancyTrainEast and GetDistanceBetweenCoords(GetEntityCoords(PlayerPedId()), Config.eastLoc) < 150 then
+							EastTrainCreateVehicle(0xCD2C7CA1, Config.eastLoc, Config.EastTrainMaxSpeed)
+							TriggerServerEvent("BGS_Trains:StoreServerTrainEast", eastTrain, eastTrainBartender)
+						else
+							EastTrainCreateVehicle(Config.EastTrain, Config.eastLoc, Config.EastTrainMaxSpeed)
+							TriggerServerEvent("BGS_Trains:StoreServerTrainEast", eastTrain)
+						end
+					elseif GetDistanceBetweenCoords(GetEntityCoords(PlayerPedId()), Config.eastLoc) < 150 then
 						if Config.UseChristmasTrainEast then
 							EastTrainCreateVehicle(christmasTrainHash, Config.eastLoc, Config.EastTrainMaxSpeed)
 							TriggerServerEvent("BGS_Trains:StoreServerTrainEast", eastTrain)
@@ -243,10 +261,22 @@ if not Config.Debug then
 							EastTrainCreateVehicle(Config.EastTrain, Config.eastLoc, Config.EastTrainMaxSpeed)
 							TriggerServerEvent("BGS_Trains:StoreServerTrainEast", eastTrain)
 						end
+						TriggerServerEvent("BGS_Trains:UpdateTrainsAllPlayers")
 					end
 				end
-				if GetDistanceBetweenCoords(GetEntityCoords(PlayerPedId()), Config.westLoc) < 150 and not westTrain then
-					if Config.UseWestTrain then
+				if Config.UseWestTrain and not westTrain then
+					if Config.UseNetwork then
+						if Config.UseChristmasTrainWest then
+							WestTrainCreateVehicle(christmasTrainHash, Config.westLoc, Config.WestTrainMaxSpeed)
+							TriggerServerEvent("BGS_Trains:StoreServerTrainWest", westTrain)
+						elseif Config.UseFancyTrainWest and GetDistanceBetweenCoords(GetEntityCoords(PlayerPedId()), Config.westLoc) < 150 then
+							WestTrainCreateVehicle(0xCD2C7CA1, Config.westLoc, Config.WestTrainMaxSpeed)
+							TriggerServerEvent("BGS_Trains:StoreServerTrainWest", westTrain, westTrainBartender)
+						else
+							WestTrainCreateVehicle(Config.WestTrain, Config.westLoc, Config.WestTrainMaxSpeed)
+							TriggerServerEvent("BGS_Trains:StoreServerTrainWest", westTrain)
+						end
+					elseif GetDistanceBetweenCoords(GetEntityCoords(PlayerPedId()), Config.westLoc) < 150 then
 						if Config.UseChristmasTrainWest then
 							WestTrainCreateVehicle(christmasTrainHash, Config.westLoc, Config.WestTrainMaxSpeed)
 							TriggerServerEvent("BGS_Trains:StoreServerTrainWest", westTrain)
@@ -257,15 +287,19 @@ if not Config.Debug then
 							WestTrainCreateVehicle(Config.WestTrain, Config.westLoc, Config.WestTrainMaxSpeed)
 							TriggerServerEvent("BGS_Trains:StoreServerTrainWest", westTrain)
 						end
+						TriggerServerEvent("BGS_Trains:UpdateTrainsAllPlayers")
 					end
 				end
-				if GetDistanceBetweenCoords(GetEntityCoords(PlayerPedId()), Config.tramLoc) < 150 and not tram then
-					if Config.UseTrams then
+				if Config.UseTrams and not tram then
+					if Config.UseNetwork then
 						TramCreateVehicle(Config.Trolley, Config.tramLoc)
 						TriggerServerEvent("BGS_Trains:StoreServerTram", tram)
+					elseif GetDistanceBetweenCoords(GetEntityCoords(PlayerPedId()), Config.tramLoc) < 150 then
+						TramCreateVehicle(Config.Trolley, Config.tramLoc)
+						TriggerServerEvent("BGS_Trains:StoreServerTram", tram)
+						TriggerServerEvent("BGS_Trains:UpdateTrainsAllPlayers")
 					end
 				end
-				TriggerServerEvent("BGS_Trains:ReturnServerTrains")
 			end
 		end)
 	end)
@@ -313,7 +347,7 @@ CreateThread(function()
 	local stopped = false
 	while true do
 		Wait(500)
-		if westTrain then
+		if westTrain and not Config.RandomizeWestJunctions then
 			if not westBlipRendered then
 				RenderTrainBlip(westTrain, "west")
 			end
@@ -348,7 +382,7 @@ CreateThread(function()
 	local stopped = false
 	while true do
 		Wait(500)
-		if eastTrain then
+		if eastTrain and not Config.RandomizeEastJunctions then
 			if not eastBlipRendered then
 				RenderTrainBlip(eastTrain, "east")
 			end
@@ -406,7 +440,7 @@ end)
 CreateThread(function()
 	while true do
 		Wait(250)
-		if tram then
+		if tram and not Config.RandomizeTramJunctions then
 			local coords = GetEntityCoords(tram)
         	local traincoords = vector3(coords.x, coords.y, coords.z)
 			for i = 1, #Config.RouteOneTramSwitches do
@@ -559,6 +593,7 @@ if Config.UseFancyTrainWest then
 	CreateThread(function()
 		local deleted = false
 		local attached = false
+		local spawned = false
 		local propset
 		local propset2
 		local propsetHash
@@ -604,10 +639,22 @@ if Config.UseFancyTrainWest then
 
 						local barPropsetOnTrain = Citizen.InvokeNative(0x9609DBDDE18FAD8C, barPropsHash, 0, 0, 0, carriage, 0, true, 0, true)
 						local sleeperPropsetOnTrain = Citizen.InvokeNative(0x9609DBDDE18FAD8C, sleeperPropsHash, 0, 0, 0, carriage2, 0, true, 0, true)
+
+						attached = true
+					end
+
+					if not spawned then
 						local coords = GetEntityCoords(carriage)
-						westTrainBartender = CreatePed(518339740, coords.x, coords.y+1.25, coords.z+0.5, GetEntityHeading(carriage)-90, true, false, false, false)
+	
+						local scenario_type_hash = joaat("WORLD_HUMAN_BARTENDER_CLEAN_GLASS")
+						local scenario_duration = -1  -- (1000 = 1 second, -1 = forever)
+						local must_play_enter_anim = true
+						local optional_conditional_anim_hash = joaat("WORLD_HUMAN_BARTENDER_CLEAN_GLASS_MALE_B")  -- 0 = play random conditional anim. Every conditional anim has requirements to play it. If requirements are not met, ped plays random allowed conditional anim or can be stuck. For example, this scenario type have possible conditional anim "WORLD_HUMAN_LEAN_BACK_WALL_SMOKING_MALE_D", but it can not be played by player, because condition is set to NOT be CAIConditionIsPlayer (check file amb_rest.meta and amb_rest_CA.meta with OPENIV to clarify requirements). 
+						local unknown_5 = -1.0
+						local unknown_6 = 0
+	
+						westTrainBartender = CreatePed(518339740, coords.x+0.85, coords.y+1.25, coords.z+0.5, GetEntityHeading(carriage), true, false, false, false)
 						SetPedRandomComponentVariation(westTrainBartender, 0)
-						FreezeEntityPosition(westTrainBartender, true)
 						Citizen.InvokeNative(0xA5C38736C426FCB8, westTrainBartender, true)
 						Citizen.InvokeNative(0x9F8AA94D6D97DBF4, westTrainBartender, true)
 						Citizen.InvokeNative(0x63F58F7C80513AAD, westTrainBartender, false)
@@ -615,8 +662,9 @@ if Config.UseFancyTrainWest then
 						SetBlockingOfNonTemporaryEvents(westTrainBartender, true)
 						SetEntityAsMissionEntity(westTrainBartender, true, true)
 						SetEntityCanBeDamaged(westTrainBartender, false)
-
-						attached = true
+	
+						Citizen.InvokeNative(0x524B54361229154F, westTrainBartender, scenario_type_hash, scenario_duration, must_play_enter_anim, optional_conditional_anim_hash, unknown_5, unknown_6)
+						spawned = true
 					end
 
 					Citizen.InvokeNative(0xB1964A83B345B4AB, barPropsHash)
@@ -625,7 +673,7 @@ if Config.UseFancyTrainWest then
 					Citizen.InvokeNative(0x550CE392A4672412, carriage3, 9, true, true)			-- Open fancy cabin doors
 					Citizen.InvokeNative(0x550CE392A4672412, carriage3, 10, true, true)			-- Open fancy cabin doors
 					Citizen.InvokeNative(0x550CE392A4672412, carriage3, 11, true, true)			-- Open fancy cabin doors
-	
+
 					Citizen.InvokeNative(0x550CE392A4672412, carriage4, 9, true, true)			-- Open fancy cabin doors
 					Citizen.InvokeNative(0x550CE392A4672412, carriage4, 10, true, true)			-- Open fancy cabin doors
 					Citizen.InvokeNative(0x550CE392A4672412, carriage4, 11, true, true)			-- Open fancy cabin doors
@@ -704,12 +752,14 @@ if Config.Debug then
 			if Config.UseChristmasTrainEast or Config.UseChristmasTrainWest then
 				DeleteEntity(object)
 			end
-			NetworkRequestControlOfEntity(westTrain)
-			NetworkRequestControlOfEntity(eastTrain)
-			NetworkRequestControlOfEntity(tram)
-			NetworkRequestControlOfEntity(westTrainDriver)
-			NetworkRequestControlOfEntity(eastTrainDriver)
-			NetworkRequestControlOfEntity(tramDriver)
+			if Config.UseNetwork then
+				NetworkRequestControlOfEntity(westTrain)
+				NetworkRequestControlOfEntity(eastTrain)
+				NetworkRequestControlOfEntity(tram)
+				NetworkRequestControlOfEntity(westTrainDriver)
+				NetworkRequestControlOfEntity(eastTrainDriver)
+				NetworkRequestControlOfEntity(tramDriver)
+			end
 			DeleteEntity(westTrain)
 			DeleteEntity(eastTrain)
 			DeleteEntity(tram)
