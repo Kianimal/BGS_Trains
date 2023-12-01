@@ -1,6 +1,6 @@
 Config = {}
 
-Config.UseNetwork = false                               -- Whether to use networked trains or not. If you are having problems with trains syncing and spawning correctly, set this to false.
+Config.UseNetwork = true                                -- Whether to use networked trains or not. If you are having problems with trains syncing and spawning correctly, set this to false.
                                                         -- If network is set to false, trains will only spawn once a player (any player in the server) gets within 150 "yards" of the train spawn location (defined below).
                                                         -- If network is set to true, all configured trains will spawn immediately on first player spawn.
 
@@ -15,10 +15,8 @@ Config.westLoc = vector3(-3766.98, -2787.98, -14.44)    -- Spawn location for we
 Config.UseChristmasTrainEast = false                    -- Whether or not to use Christmas trains
 Config.UseChristmasTrainWest = false
 
-Config.UseFancyTrainEast = true                         -- Whether or not to use fancy trains - will spawn a custom made train that includes a bar car (with bartender), a sleeper cabin, and luxury seating cabins.
-Config.UseEastTrainBartender = true                     -- Whether or not to use the east train bartender (WORK IN PROGRESS)
+Config.UseFancyTrainEast = false                         -- Whether or not to use fancy trains - will spawn a custom made train that includes a bar car (with bartender), a sleeper cabin, and luxury seating cabins.
 Config.UseFancyTrainWest = true
-Config.UseWestTrainBartender = true                     -- Same as above but for west train
 
 Config.EnablePassengers = true                          -- Enable passengers or not
 
