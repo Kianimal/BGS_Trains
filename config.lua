@@ -3,6 +3,8 @@ Config = {}
 Config.Debug = false                                    -- Spawns the train in their location and stops them permanently (doesn't spawn west train). Also deletes trains on script ensure.
 
 Config.UseNetwork = false                               -- Whether to use networked trains or not. If you are having problems with trains syncing and spawning correctly, set this to false.
+                                                        -- If network is set to false, trains will only spawn once a player (any player in the server) gets within 150 "yards" of the train spawn location (defined below).
+                                                        -- If network is set to true, all configured trains will spawn immediately on first player spawn.
 
 Config.UseEastTrain = true                              -- Use east line or not
 Config.UseWestTrain = true                              -- Use west line or not
