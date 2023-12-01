@@ -573,6 +573,7 @@ if Config.UseFancyTrainEast then
 
 						Citizen.InvokeNative(0x524B54361229154F, eastTrainBartender, scenario_type_hash, scenario_duration, must_play_enter_anim, optional_conditional_anim_hash, unknown_5, unknown_6)
 						spawned = true
+						TriggerServerEvent("BGS_Trains:StoreServerTrainEast", eastTrain, eastTrainBartender)
 					end
 
 					Citizen.InvokeNative(0xB1964A83B345B4AB, barPropsHash)
@@ -586,8 +587,7 @@ if Config.UseFancyTrainEast then
 					Citizen.InvokeNative(0x550CE392A4672412, carriage4, 10, true, true)			-- Open fancy cabin doors
 					Citizen.InvokeNative(0x550CE392A4672412, carriage4, 11, true, true)			-- Open fancy cabin doors
 
-					completed = true
-				elseif Config.UseNetwork and not completed then
+				elseif Config.UseNetwork then
 					propset = Citizen.InvokeNative(0xCFC0BD09BB1B73FF, carriage)
 					propsetHash = Citizen.InvokeNative(0xA6A9712955F53D9C, propset)
 
@@ -648,6 +648,7 @@ if Config.UseFancyTrainEast then
 
 						Citizen.InvokeNative(0x524B54361229154F, eastTrainBartender, scenario_type_hash, scenario_duration, must_play_enter_anim, optional_conditional_anim_hash, unknown_5, unknown_6)
 						spawned = true
+						TriggerServerEvent("BGS_Trains:StoreServerTrainEast", eastTrain, eastTrainBartender)
 					end
 
 					Citizen.InvokeNative(0xB1964A83B345B4AB, barPropsHash)
@@ -748,6 +749,7 @@ if Config.UseFancyTrainWest then
 
 						Citizen.InvokeNative(0x524B54361229154F, westTrainBartender, scenario_type_hash, scenario_duration, must_play_enter_anim, optional_conditional_anim_hash, unknown_5, unknown_6)
 						spawned = true
+						TriggerServerEvent("BGS_Trains:StoreServerTrainWest", westTrain, westTrainBartender)
 					end
 
 					Citizen.InvokeNative(0xB1964A83B345B4AB, barPropsHash)
@@ -761,7 +763,7 @@ if Config.UseFancyTrainWest then
 					Citizen.InvokeNative(0x550CE392A4672412, carriage4, 10, true, true)			-- Open fancy cabin doors
 					Citizen.InvokeNative(0x550CE392A4672412, carriage4, 11, true, true)			-- Open fancy cabin doors
 
-				elseif Config.UseNetwork and not completed then
+				elseif Config.UseNetwork then
 					propset = Citizen.InvokeNative(0xCFC0BD09BB1B73FF, carriage)
 					propsetHash = Citizen.InvokeNative(0xA6A9712955F53D9C, propset)
 
@@ -822,6 +824,7 @@ if Config.UseFancyTrainWest then
 
 						Citizen.InvokeNative(0x524B54361229154F, westTrainBartender, scenario_type_hash, scenario_duration, must_play_enter_anim, optional_conditional_anim_hash, unknown_5, unknown_6)
 						spawned = true
+						TriggerServerEvent("BGS_Trains:StoreServerTrainWest", westTrain, westTrainBartender)
 					end
 
 					Citizen.InvokeNative(0xB1964A83B345B4AB, barPropsHash)
