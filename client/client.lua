@@ -38,10 +38,10 @@ end
 
 -- Create west train line
 local function WestTrainCreateVehicle(trainModel, loc, speed)
-	local trainWagons = N_0x635423d55ca84fc8(trainModel)
+	local trainWagons = Citizen.InvokeNative(0x635423d55ca84fc8, trainModel)
 
 	for i = 0, trainWagons - 1 do
-		local trainWagonModel = N_0x8df5f6a19f99f0d5(trainModel, i)
+		local trainWagonModel = Citizen.InvokeNative(0x8df5f6a19f99f0d5, trainModel, i)
 		RequestModel(trainWagonModel)
 		while not HasModelLoaded(trainWagonModel) do
 			Citizen.Wait(0)
@@ -86,10 +86,10 @@ end
 
 -- Create east train line
 local function EastTrainCreateVehicle(trainModel, loc, speed)
-	local trainWagons = N_0x635423d55ca84fc8(trainModel)
+	local trainWagons = Citizen.InvokeNative(0x635423d55ca84fc8, trainModel)
 
 	for i = 0, trainWagons - 1 do
-		local trainWagonModel = N_0x8df5f6a19f99f0d5(trainModel, i)
+		local trainWagonModel = Citizen.InvokeNative(0x8df5f6a19f99f0d5, trainModel, i)
 		RequestModel(trainWagonModel)
 		while not HasModelLoaded(trainWagonModel) do
 			Citizen.Wait(0)
@@ -134,10 +134,10 @@ end
 
 -- Create tram
 local function TramCreateVehicle(trainModel, loc)
-	local trainWagons = N_0x635423d55ca84fc8(trainModel)
+	local trainWagons = Citizen.InvokeNative(0x635423d55ca84fc8, trainModel)
 
 	for i = 0, trainWagons - 1 do
-		local trainWagonModel = N_0x8df5f6a19f99f0d5(trainModel, i)
+		local trainWagonModel = Citizen.InvokeNative(0x8df5f6a19f99f0d5, trainModel, i)
 		RequestModel(trainWagonModel)
 		while not HasModelLoaded(trainWagonModel) do
 			Citizen.Wait(0)
@@ -222,8 +222,8 @@ local function IsTrain(vehicle)
 end
 
 local function DecorateTrain(vehicle)
-    object = CreateObjectNoOffset(GetHashKey('mp006_p_veh_xmasnsteamer01x'), 0, 0, 0, false, false, false, false)
-    AttachEntityToEntity(object, vehicle, 0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, false, false, false, false, 0, true, false, false)
+    object = CreateObjectNoOffset(GetHashKey('mp006_p_veh_xmasnsteamer01x'), 0, 0, 0, false, false, false)
+    AttachEntityToEntity(object, vehicle, 0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, false, false, false, false, 0, true)
     return object
 end
 
