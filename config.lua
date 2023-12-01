@@ -17,7 +17,7 @@ Config.westLoc = vector3(-3766.98, -2787.98, -14.44)    -- Spawn location for we
 Config.UseChristmasTrainEast = false                    -- Whether or not to use Christmas trains
 Config.UseChristmasTrainWest = false
 
-Config.UseFancyTrainEast = true                         -- Whether or not to use fancy trains
+Config.UseFancyTrainEast = true                         -- Whether or not to use fancy trains - will spawn a custom made train that includes a bar car (with bartender), a sleeper cabin, and luxury seating cabins.
 Config.UseFancyTrainWest = true
 
 Config.EnablePassengers = true                          -- Enable passengers or not
