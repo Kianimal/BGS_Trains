@@ -20,9 +20,11 @@ local object
 
 -- Check for server stored train variables
 RegisterNetEvent("BGS_Trains:GetServerTrains")
-AddEventHandler("BGS_Trains:GetServerTrains", function(serverEastTrain, serverWestTrain, serverTram)
+AddEventHandler("BGS_Trains:GetServerTrains", function(serverEastTrain, serverWestTrain, serverTram, eastBartender, westBartender)
 	eastTrain = serverEastTrain
 	westTrain = serverWestTrain
+	eastTrainBartender = eastBartender
+	westTrainBartender = westBartender
 	tram = serverTram
 end)
 
