@@ -9,12 +9,12 @@ local westTrainDriver = nil
 local tramDriver = nil
 local westPropsLoaded = false
 local eastPropsLoaded = false
+local christmasTrainHash = 0x124A1F89
+local object
 local Trains = {}
 local TrainModels = {
     'northsteamer01x'
 }
-local christmasTrainHash = 0x124A1F89
-local object
 
 -- Check for server stored train variables
 RegisterNetEvent("BGS_Trains:GetServerTrains")
@@ -229,6 +229,54 @@ local function DecorateTrain(vehicle)
     return object
 end
 
+local function SpawnBartender(train)
+
+	local carriage = Citizen.InvokeNative(0xD0FB093A4CDB932C, train, 3)
+	local coords = GetEntityCoords(carriage)
+
+	local scenario_type_hash = joaat("WORLD_HUMAN_BARTENDER_CLEAN_GLASS")
+	local scenario_duration = -1  -- (1000 = 1 second, -1 = forever)
+	local must_play_enter_anim = true
+	local optional_conditional_anim_hash = joaat("WORLD_HUMAN_BARTENDER_CLEAN_GLASS_MALE_B")  -- 0 = play random conditional anim. Every conditional anim has requirements to play it. If requirements are not met, ped plays random allowed conditional anim or can be stuck. For example, this scenario type have possible conditional anim "WORLD_HUMAN_LEAN_BACK_WALL_SMOKING_MALE_D", but it can not be played by player, because condition is set to NOT be CAIConditionIsPlayer (check file amb_rest.meta and amb_rest_CA.meta with OPENIV to clarify requirements). 
+	local unknown_5 = -1.0
+	local unknown_6 = 0
+
+	RequestModel(joaat("u_m_m_nbxbartender_01"))
+
+	while not HasModelLoaded(joaat("u_m_m_nbxbartender_01")) do
+		RequestModel(joaat("u_m_m_nbxbartender_01"))
+		Wait(1)
+	end
+
+    local bartender = CreatePed(joaat("u_m_m_nbxbartender_01"), coords.x+0.85, coords.y+1.25, coords.z+0.5, GetEntityHeading(carriage), false, false)
+	while bartender == 0 do
+		Wait(10)
+		bartender = CreatePed(joaat("u_m_m_nbxbartender_01"), GetEntityCoords(PlayerPedId()), GetEntityHeading(PlayerPedId()), false, false)
+	end
+	SetPedRandomComponentVariation(bartender, 0)
+	Citizen.InvokeNative(0xA5C38736C426FCB8, bartender, true)
+	Citizen.InvokeNative(0x9F8AA94D6D97DBF4, bartender, true)
+	Citizen.InvokeNative(0x63F58F7C80513AAD, bartender, false)
+	Citizen.InvokeNative(0x7A6535691B477C48, bartender, false)
+	SetBlockingOfNonTemporaryEvents(bartender, true)
+	SetEntityAsMissionEntity(bartender, true, true)
+	SetEntityCanBeDamaged(bartender, false)
+	Citizen.InvokeNative(0xFD6943B6DF77E449, bartender, false) -- Can't be lassoed
+	Citizen.InvokeNative(0xAE6004120C18DF97, bartender, 0, false)
+	SetPedCanBeTargetted(bartender, false)
+	SetEntityNoCollisionEntity(bartender, PlayerPedId(), false)
+	SetModelAsNoLongerNeeded(joaat("u_m_m_nbxbartender_01"))
+
+	AttachEntityToEntity(bartender, carriage, 14, 0, 0.5, 0.25, 0, 0, 0, false, false, false, true, 0, true)
+
+	if Config.UseNetwork then
+		NetworkRegisterEntityAsNetworked(bartender)
+	end
+
+	Citizen.InvokeNative(0x524B54361229154F, bartender, scenario_type_hash, scenario_duration, must_play_enter_anim, optional_conditional_anim_hash, unknown_5, unknown_6)
+
+end
+
 local function LuxuryInterior(train)
 
 	if (train == eastTrain and eastPropsLoaded) or (train == westTrain and westPropsLoaded) then
@@ -300,11 +348,8 @@ local function LuxuryInterior(train)
 	Citizen.InvokeNative(0x550CE392A4672412, carriage4, 10, true, true)			-- Open fancy cabin doors
 	Citizen.InvokeNative(0x550CE392A4672412, carriage4, 11, true, true)			-- Open fancy cabin doors
 
-	if train == eastTrain then
-		eastPropsLoaded = true
-	else
-		westPropsLoaded = true
-	end
+	SpawnBartender(train)
+
 end
 
 local function SpawnEastTrain()
@@ -336,9 +381,11 @@ RegisterNetEvent("vorp:SelectedCharacter", function()
 			if Config.UseEastTrain and not eastTrain then
 				if Config.UseNetwork then
 					SpawnEastTrain()
+					Wait(100)
 					TriggerServerEvent("BGS_Trains:StoreServerTrainEast", eastTrain)
 				elseif GetDistanceBetweenCoords(GetEntityCoords(PlayerPedId()), Config.eastLoc) < 150 then
 					SpawnEastTrain()
+					Wait(100)
 					TriggerServerEvent("BGS_Trains:StoreServerTrainEast", eastTrain)
 					TriggerServerEvent("BGS_Trains:UpdateTrainsAllPlayers")
 				end
@@ -346,9 +393,11 @@ RegisterNetEvent("vorp:SelectedCharacter", function()
 			if Config.UseWestTrain and not westTrain then
 				if Config.UseNetwork then
 					SpawnWestTrain()
+					Wait(100)
 					TriggerServerEvent("BGS_Trains:StoreServerTrainWest", westTrain)
 				elseif GetDistanceBetweenCoords(GetEntityCoords(PlayerPedId()), Config.westLoc) < 150 then
 					SpawnWestTrain()
+					Wait(100)
 					TriggerServerEvent("BGS_Trains:StoreServerTrainWest", westTrain)
 					TriggerServerEvent("BGS_Trains:UpdateTrainsAllPlayers")
 				end
@@ -356,9 +405,11 @@ RegisterNetEvent("vorp:SelectedCharacter", function()
 			if Config.UseTrams and not tram then
 				if Config.UseNetwork then
 					TramCreateVehicle(Config.Trolley, Config.tramLoc)
+					Wait(100)
 					TriggerServerEvent("BGS_Trains:StoreServerTram", tram)
 				elseif GetDistanceBetweenCoords(GetEntityCoords(PlayerPedId()), Config.tramLoc) < 150 then
 					TramCreateVehicle(Config.Trolley, Config.tramLoc)
+					Wait(100)
 					TriggerServerEvent("BGS_Trains:StoreServerTram", tram)
 					TriggerServerEvent("BGS_Trains:UpdateTrainsAllPlayers")
 				end
