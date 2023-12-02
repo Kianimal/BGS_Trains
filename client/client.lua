@@ -7,6 +7,8 @@ local eastBlipRendered = false
 local eastTrainDriver = nil
 local westTrainDriver = nil
 local tramDriver = nil
+local westPropsLoaded = false
+local eastPropsLoaded = false
 local Trains = {}
 local TrainModels = {
     'northsteamer01x'
@@ -228,6 +230,11 @@ local function DecorateTrain(vehicle)
 end
 
 local function LuxuryInterior(train)
+
+	if (train == eastTrain and eastPropsLoaded) or (train == westTrain and westPropsLoaded) then
+		return
+	end
+
 	local barPropsHash = -1747631964
 	local sleeperPropsHash = -317994478
 
@@ -243,6 +250,7 @@ local function LuxuryInterior(train)
 
 	while not carriage and not carriage2 and not carriage3 and not carriage4 do
 		Wait(1)
+		print("test1")
 		carriage = Citizen.InvokeNative(0xD0FB093A4CDB932C, train, 3)
 		carriage2 = Citizen.InvokeNative(0xD0FB093A4CDB932C, train, 4)
 		carriage3 = Citizen.InvokeNative(0xD0FB093A4CDB932C, train, 6)
@@ -251,18 +259,21 @@ local function LuxuryInterior(train)
 
 	while not propset and not propsetHash do
 		Wait(1)
+		print("test2")
 		propset = Citizen.InvokeNative(0xCFC0BD09BB1B73FF, carriage)
 		propsetHash = Citizen.InvokeNative(0xA6A9712955F53D9C, propset)
 	end
 
 	while not propset2 and not propsetHash2 do
 		Wait(1)
+		print("test3")
 		propset2 = Citizen.InvokeNative(0xCFC0BD09BB1B73FF, carriage2)
 		propsetHash2 = Citizen.InvokeNative(0xA6A9712955F53D9C, propset2)
 	end
 
 	while not Citizen.InvokeNative(0xF42DB680A8B2A4D9, propset) and not (Citizen.InvokeNative(0xF42DB680A8B2A4D9, propset2)) do
 		Wait(1)
+		print("test4")
 	end
 
 	Citizen.InvokeNative(0x3BCF32FF37EA9F1D, carriage)
@@ -273,10 +284,12 @@ local function LuxuryInterior(train)
 
 	while not Citizen.InvokeNative(0x48A88FC684C55FDC, barPropsHash) do
 		Wait(1)
+		print("test5")
 	end
 
 	while not Citizen.InvokeNative(0x48A88FC684C55FDC, sleeperPropsHash) do
 		Wait(1)
+		print("test6")
 	end
 
 	local barPropsetOnTrain = Citizen.InvokeNative(0x9609DBDDE18FAD8C, barPropsHash, 0, 0, 0, carriage, 0, true, 0, true)
@@ -292,6 +305,12 @@ local function LuxuryInterior(train)
 	Citizen.InvokeNative(0x550CE392A4672412, carriage4, 9, true, true)			-- Open fancy cabin doors
 	Citizen.InvokeNative(0x550CE392A4672412, carriage4, 10, true, true)			-- Open fancy cabin doors
 	Citizen.InvokeNative(0x550CE392A4672412, carriage4, 11, true, true)			-- Open fancy cabin doors
+
+	if train == eastTrain then
+		eastPropsLoaded = true
+	else
+		westPropsLoaded = true
+	end
 end
 
 local function SpawnEastTrain()
@@ -543,12 +562,12 @@ if Config.UseFancyTrainEast then
 		while true do
 			Wait(1000)
 			if eastTrain then
-				if GetDistanceBetweenCoords(GetEntityCoords(PlayerPedId()), GetEntityCoords(eastTrain)) < 150 and not Config.UseNetwork then
-					LuxuryInterior(eastTrain)
-				elseif Config.UseNetwork then
+				if GetDistanceBetweenCoords(GetEntityCoords(PlayerPedId()), GetEntityCoords(eastTrain)) < 150 and not eastPropsLoaded then
 					LuxuryInterior(eastTrain)
 				end
-				return
+				if eastPropsLoaded then
+					return
+				end
 			end
 		end
 	end)
@@ -559,12 +578,12 @@ if Config.UseFancyTrainWest then
 		while true do
 			Wait(1000)
 			if westTrain then
-				if GetDistanceBetweenCoords(GetEntityCoords(PlayerPedId()), GetEntityCoords(westTrain)) < 150 and not Config.UseNetwork then
-					LuxuryInterior(westTrain)
-				elseif Config.UseNetwork then
+				if GetDistanceBetweenCoords(GetEntityCoords(PlayerPedId()), GetEntityCoords(westTrain)) < 150 and not westPropsLoaded then
 					LuxuryInterior(westTrain)
 				end
-				return
+				if westPropsLoaded then
+					return
+				end
 			end
 		end
 	end)
