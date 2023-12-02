@@ -15,10 +15,12 @@ Config.westLoc = vector3(-3766.98, -2787.98, -14.44)    -- Spawn location for we
 Config.UseChristmasTrainEast = false                    -- Whether or not to use Christmas trains
 Config.UseChristmasTrainWest = false
 
-Config.UseFancyTrainEast = false                        -- Whether or not to use fancy trains - will spawn a custom made train that includes a bar car (with bartender), a sleeper cabin, and luxury seating cabins.
-Config.UseFancyTrainWest = false
+Config.UseFancyTrainEast = true                         -- Whether or not to use fancy trains - will spawn a custom made train that includes a bar car (with bartender), a sleeper cabin, and luxury seating cabins.
+Config.UseFancyTrainWest = true
 
-Config.EnablePassengers = true                          -- Enable passengers or not
+Config.LuxuryTrainBartender = true                      -- Whether or not to spawn a bartender in the fancy trains - uses more client resources
+
+Config.EnablePassengers = true                          -- Enable random NPC spawned passengers on trains
 
 Config.UseRandomJunctions = false                       -- Use random junctions or not
 Config.RandomJunctionstime = 900000                     -- Time between random junctions (in milliseconds) 15 minutes = 900000

@@ -15,6 +15,10 @@ local Trains = {}
 local TrainModels = {
     'northsteamer01x'
 }
+local eastBartender
+local westBartender
+local prompt
+local inMenu = false
 
 -- Check for server stored train variables
 RegisterNetEvent("BGS_Trains:GetServerTrains")
@@ -229,6 +233,32 @@ local function DecorateTrain(vehicle)
     return object
 end
 
+local function AttachPrompt(position)
+	if prompt then
+		Citizen.InvokeNative(0xAE84C5EE2C384FB3, prompt, position.x, position.y, position.z)
+	end
+end
+
+local function RenderPrompt(bartender)
+	if prompt then
+		PromptDelete(prompt)
+	end
+	local position
+	prompt = PromptRegisterBegin()
+	PromptSetControlAction(prompt, GetHashKey("INPUT_CONTEXT_X")) -- R key
+	PromptSetText(prompt, CreateVarString(10, "LITERAL_STRING", "Buy"))
+	PromptSetHoldMode(prompt, 1000)
+	PromptRegisterEnd(prompt)
+
+	position = GetEntityCoords(bartender)
+	Citizen.InvokeNative(0xAE84C5EE2C384FB3, prompt, position.x, position.y, position.z)
+
+	local radius = 2.0
+	Citizen.InvokeNative(0x0C718001B77CA468, prompt, radius)
+
+	AttachPrompt(position)
+end
+
 local function SpawnBartender(train)
 
 	local carriage = Citizen.InvokeNative(0xD0FB093A4CDB932C, train, 3)
@@ -274,6 +304,21 @@ local function SpawnBartender(train)
 	end
 
 	Citizen.InvokeNative(0x524B54361229154F, bartender, scenario_type_hash, scenario_duration, must_play_enter_anim, optional_conditional_anim_hash, unknown_5, unknown_6)
+
+	RenderPrompt(bartender)
+
+	CreateThread(function()
+		while true do
+			Wait(500)
+			AttachEntityToEntity(bartender, carriage, 14, 0, 0.5, 0.4, 0, 0, 0, false, false, false, true, 0, true)
+		end
+	end)
+
+	if train == eastTrain then
+		eastBartender = bartender
+	else
+		westBartender = bartender
+	end
 
 end
 
@@ -348,7 +393,9 @@ local function LuxuryInterior(train)
 	Citizen.InvokeNative(0x550CE392A4672412, carriage4, 10, true, true)			-- Open fancy cabin doors
 	Citizen.InvokeNative(0x550CE392A4672412, carriage4, 11, true, true)			-- Open fancy cabin doors
 
-	SpawnBartender(train)
+	if Config.LuxuryTrainBartender then
+		SpawnBartender(train)
+	end
 
 end
 
@@ -629,6 +676,20 @@ if Config.UseFancyTrainWest then
 				if westPropsLoaded then
 					return
 				end
+			end
+		end
+	end)
+end
+
+if Config.LuxuryTrainBartender then
+	CreateThread(function()
+		while true do
+			Wait(10)
+			if eastBartender and #(GetEntityCoords(eastBartender) - GetEntityCoords(PlayerPedId())) < 3 then
+				AttachPrompt(GetEntityCoords(eastBartender))
+			end
+			if westBartender and #(GetEntityCoords(westBartender) - GetEntityCoords(PlayerPedId())) < 3 then
+				AttachPrompt(GetEntityCoords(westBartender))
 			end
 		end
 	end)
