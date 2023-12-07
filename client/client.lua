@@ -73,19 +73,21 @@ local function WestTrainCreateVehicle(trainModel, loc, speed)
 	westTrainDriver = trainDriverHandle
 
 	-- Make driver invincible
-	Citizen.InvokeNative(0xA5C38736C426FCB8, trainDriverHandle, true)
-	Citizen.InvokeNative(0x9F8AA94D6D97DBF4, trainDriverHandle, true)
-	Citizen.InvokeNative(0x63F58F7C80513AAD, trainDriverHandle, false)
-	Citizen.InvokeNative(0x7A6535691B477C48, trainDriverHandle, false)
-	SetBlockingOfNonTemporaryEvents(trainDriverHandle, true)
+	Citizen.InvokeNative(0xA5C38736C426FCB8, westTrainDriver, true)
+	Citizen.InvokeNative(0x9F8AA94D6D97DBF4, westTrainDriver, true)
+	Citizen.InvokeNative(0x63F58F7C80513AAD, westTrainDriver, false)
+	Citizen.InvokeNative(0x7A6535691B477C48, westTrainDriver, false)
+	SetBlockingOfNonTemporaryEvents(westTrainDriver, true)
 	Citizen.InvokeNative(0x05254BA0B44ADC16, westTrain, false)
-	SetEntityAsMissionEntity(trainDriverHandle, true, true)
-	SetEntityCanBeDamaged(trainDriverHandle, false)
+	SetEntityAsMissionEntity(westTrainDriver, true, true)
+	SetEntityCanBeDamaged(westTrainDriver, false)
+	Citizen.InvokeNative(0xFD6943B6DF77E449, westTrainDriver, false) -- Can't be lassoed
+	FreezeEntityPosition(westTrainDriver, true)
 
 	-- Network the train and driver
 	if Config.UseNetwork then
 		NetworkRegisterEntityAsNetworked(westTrain)
-		NetworkRegisterEntityAsNetworked(trainDriverHandle)
+		NetworkRegisterEntityAsNetworked(westTrainDriver)
 	end
 
 end
@@ -121,19 +123,21 @@ local function EastTrainCreateVehicle(trainModel, loc, speed)
 	eastTrainDriver = trainDriverHandle
 
 	-- Make driver invincible
-	Citizen.InvokeNative(0xA5C38736C426FCB8, trainDriverHandle, true)
-	Citizen.InvokeNative(0x9F8AA94D6D97DBF4, trainDriverHandle, true)
-	Citizen.InvokeNative(0x63F58F7C80513AAD, trainDriverHandle, false)
-	Citizen.InvokeNative(0x7A6535691B477C48, trainDriverHandle, false)
-	SetBlockingOfNonTemporaryEvents(trainDriverHandle, true)
+	Citizen.InvokeNative(0xA5C38736C426FCB8, eastTrainDriver, true)
+	Citizen.InvokeNative(0x9F8AA94D6D97DBF4, eastTrainDriver, true)
+	Citizen.InvokeNative(0x63F58F7C80513AAD, eastTrainDriver, false)
+	Citizen.InvokeNative(0x7A6535691B477C48, eastTrainDriver, false)
+	SetBlockingOfNonTemporaryEvents(eastTrainDriver, true)
 	Citizen.InvokeNative(0x05254BA0B44ADC16, eastTrain, false)
-	SetEntityAsMissionEntity(trainDriverHandle, true, true)
-	SetEntityCanBeDamaged(trainDriverHandle, false)
+	SetEntityAsMissionEntity(eastTrainDriver, true, true)
+	SetEntityCanBeDamaged(eastTrainDriver, false)
+	Citizen.InvokeNative(0xFD6943B6DF77E449, eastTrainDriver, false) -- Can't be lassoed
+	FreezeEntityPosition(eastTrainDriver, true)
 
 	-- Network the train and driver
 	if Config.UseNetwork then
 		NetworkRegisterEntityAsNetworked(eastTrain)
-		NetworkRegisterEntityAsNetworked(trainDriverHandle)
+		NetworkRegisterEntityAsNetworked(eastTrainDriver)
 	end
 
 end
@@ -164,16 +168,17 @@ local function TramCreateVehicle(trainModel, loc)
 	tramDriver = trainDriverHandle
 
 	-- Make driver invincible
-	SetEntityAsMissionEntity(trainDriverHandle, true, true)
-	SetEntityCanBeDamaged(trainDriverHandle, false)
-	SetEntityInvincible(trainDriverHandle, true)
-	FreezeEntityPosition(trainDriverHandle, true)
-	SetBlockingOfNonTemporaryEvents(trainDriverHandle, true)
+	SetEntityAsMissionEntity(tramDriver, true, true)
+	SetEntityCanBeDamaged(tramDriver, false)
+	SetEntityInvincible(tramDriver, true)
+	FreezeEntityPosition(tramDriver, true)
+	SetBlockingOfNonTemporaryEvents(tramDriver, true)
+	Citizen.InvokeNative(0xFD6943B6DF77E449, tramDriver, false) -- Can't be lassoed
 
 	-- Network the train and driver
 	if Config.UseNetwork then
 		NetworkRegisterEntityAsNetworked(tram)
-		NetworkRegisterEntityAsNetworked(trainDriverHandle)
+		NetworkRegisterEntityAsNetworked(tramDriver)
 	end
 
 end
