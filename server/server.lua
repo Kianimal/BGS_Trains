@@ -15,7 +15,7 @@ AddEventHandler("BGS_Trains:StoreServerTrainEast", function(clientTrain)
 end)
 
 RegisterServerEvent("BGS_Trains:StoreServerTrainWest")
-AddEventHandler("BGS_Trains:StoreServerTrainEast", function(clientTrain)
+AddEventHandler("BGS_Trains:StoreServerTrainWest", function(clientTrain)
 	westTrain = clientTrain
 end)
 
@@ -29,11 +29,8 @@ AddEventHandler("BGS_Trains:ReturnServerTrains", function(addToList)
 end)
 
 RegisterServerEvent("BGS_Trains:UpdateTrainsAllPlayers", function ()
-	local peds = GetAllPeds()
-	for index, ped in ipairs(peds) do
-		if IsPedAPlayer(ped) then
-			TriggerClientEvent("BGS_Trains:GetServerTrains", ped, eastTrain, westTrain, tram)
-		end
+	for index, player in ipairs(players) do
+		TriggerClientEvent("BGS_Trains:GetServerTrains", player, eastTrain, westTrain, tram)
 	end
 end)
 
