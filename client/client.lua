@@ -512,30 +512,32 @@ CreateThread(function()
 	local stopped = false
 	while true do
 		Wait(500)
-		if westTrain and not Config.RandomizeWestJunctions then
+		if westTrain then
 			if not westBlipRendered then
 				RenderTrainBlip(westTrain, "west")
 			end
-			for i = 1, #Config.WestJunctions do
-				if GetDistanceBetweenCoords(GetEntityCoords(westTrain), Config.WestJunctions[i].coords) < 25 then
-					Citizen.InvokeNative(0xE6C5E2125EB210C1, Config.WestJunctions[i].trainTrack, Config.WestJunctions[i].junctionIndex, Config.WestJunctions[i].enabled)
-					Citizen.InvokeNative(0x3ABFA128F5BF5A70, Config.WestJunctions[i].trainTrack, Config.WestJunctions[i].junctionIndex, Config.WestJunctions[i].enabled)
+			if not Config.RandomizeWestJunctions then
+				for i = 1, #Config.WestJunctions do
+					if GetDistanceBetweenCoords(GetEntityCoords(westTrain), Config.WestJunctions[i].coords) < 25 then
+						Citizen.InvokeNative(0xE6C5E2125EB210C1, Config.WestJunctions[i].trainTrack, Config.WestJunctions[i].junctionIndex, Config.WestJunctions[i].enabled)
+						Citizen.InvokeNative(0x3ABFA128F5BF5A70, Config.WestJunctions[i].trainTrack, Config.WestJunctions[i].junctionIndex, Config.WestJunctions[i].enabled)
+					end
 				end
-			end
-			if Citizen.InvokeNative(0xE887BD31D97793F6, westTrain) then
-				Citizen.InvokeNative(0x3660BCAB3A6BB734, westTrain)
-				Wait(Config.WestTrainStationWait*1000)
-				Citizen.InvokeNative(0x787E43477746876F, westTrain)
-			end
-			for index, stop in ipairs(Config.CustomStops) do
-				if GetDistanceBetweenCoords(stop.coords, GetEntityCoords(westTrain)) < 15 and not stopped then
+				if Citizen.InvokeNative(0xE887BD31D97793F6, westTrain) then
 					Citizen.InvokeNative(0x3660BCAB3A6BB734, westTrain)
 					Wait(Config.WestTrainStationWait*1000)
 					Citizen.InvokeNative(0x787E43477746876F, westTrain)
-					stopped = true
 				end
-				if GetDistanceBetweenCoords(stop.coords, GetEntityCoords(westTrain)) > 15 then
-					stopped = false
+				for index, stop in ipairs(Config.CustomStops) do
+					if GetDistanceBetweenCoords(stop.coords, GetEntityCoords(westTrain)) < 15 and not stopped then
+						Citizen.InvokeNative(0x3660BCAB3A6BB734, westTrain)
+						Wait(Config.WestTrainStationWait*1000)
+						Citizen.InvokeNative(0x787E43477746876F, westTrain)
+						stopped = true
+					end
+					if GetDistanceBetweenCoords(stop.coords, GetEntityCoords(westTrain)) > 15 then
+						stopped = false
+					end
 				end
 			end
 		end
@@ -547,37 +549,39 @@ CreateThread(function()
 	local stopped = false
 	while true do
 		Wait(500)
-		if eastTrain and not Config.RandomizeEastJunctions then
+		if eastTrain then
 			if not eastBlipRendered then
 				RenderTrainBlip(eastTrain, "east")
 			end
-			for i = 1, #Config.EastJunctions do
-				if GetDistanceBetweenCoords(GetEntityCoords(eastTrain), Config.EastJunctions[i].coords) < 15 then
-					if Config.EastJunctions[i].trainTrack == -705539859 and Config.EastJunctions[i].junctionIndex == 2 then
-						Config.EastJunctions[i].enabled = Config.EastJunctions[i].enabled == 0 and 1 or 0
-						Citizen.InvokeNative(0xE6C5E2125EB210C1, Config.EastJunctions[i].trainTrack, Config.EastJunctions[i].junctionIndex, Config.EastJunctions[i].enabled)
-						Citizen.InvokeNative(0x3ABFA128F5BF5A70, Config.EastJunctions[i].trainTrack, Config.EastJunctions[i].junctionIndex, Config.EastJunctions[i].enabled)
-						Wait(45000)
-					else
-						Citizen.InvokeNative(0xE6C5E2125EB210C1, Config.EastJunctions[i].trainTrack, Config.EastJunctions[i].junctionIndex, Config.EastJunctions[i].enabled)
-						Citizen.InvokeNative(0x3ABFA128F5BF5A70, Config.EastJunctions[i].trainTrack, Config.EastJunctions[i].junctionIndex, Config.EastJunctions[i].enabled)
+			if not Config.RandomizeEastJunctions then
+				for i = 1, #Config.EastJunctions do
+					if GetDistanceBetweenCoords(GetEntityCoords(eastTrain), Config.EastJunctions[i].coords) < 15 then
+						if Config.EastJunctions[i].trainTrack == -705539859 and Config.EastJunctions[i].junctionIndex == 2 then
+							Config.EastJunctions[i].enabled = Config.EastJunctions[i].enabled == 0 and 1 or 0
+							Citizen.InvokeNative(0xE6C5E2125EB210C1, Config.EastJunctions[i].trainTrack, Config.EastJunctions[i].junctionIndex, Config.EastJunctions[i].enabled)
+							Citizen.InvokeNative(0x3ABFA128F5BF5A70, Config.EastJunctions[i].trainTrack, Config.EastJunctions[i].junctionIndex, Config.EastJunctions[i].enabled)
+							Wait(45000)
+						else
+							Citizen.InvokeNative(0xE6C5E2125EB210C1, Config.EastJunctions[i].trainTrack, Config.EastJunctions[i].junctionIndex, Config.EastJunctions[i].enabled)
+							Citizen.InvokeNative(0x3ABFA128F5BF5A70, Config.EastJunctions[i].trainTrack, Config.EastJunctions[i].junctionIndex, Config.EastJunctions[i].enabled)
+						end
 					end
 				end
-			end
-			if Citizen.InvokeNative(0xE887BD31D97793F6, eastTrain) then
-				Citizen.InvokeNative(0x3660BCAB3A6BB734, eastTrain)
-				Wait(Config.EastTrainStationWait*1000)
-				Citizen.InvokeNative(0x787E43477746876F, eastTrain)
-			end
-			for index, stop in ipairs(Config.CustomStops) do
-				if GetDistanceBetweenCoords(stop.coords, GetEntityCoords(eastTrain)) < 15 and not stopped then
+				if Citizen.InvokeNative(0xE887BD31D97793F6, eastTrain) then
 					Citizen.InvokeNative(0x3660BCAB3A6BB734, eastTrain)
 					Wait(Config.EastTrainStationWait*1000)
 					Citizen.InvokeNative(0x787E43477746876F, eastTrain)
-					stopped = true
 				end
-				if GetDistanceBetweenCoords(stop.coords, GetEntityCoords(eastTrain)) > 15 then
-					stopped = false
+				for index, stop in ipairs(Config.CustomStops) do
+					if GetDistanceBetweenCoords(stop.coords, GetEntityCoords(eastTrain)) < 15 and not stopped then
+						Citizen.InvokeNative(0x3660BCAB3A6BB734, eastTrain)
+						Wait(Config.EastTrainStationWait*1000)
+						Citizen.InvokeNative(0x787E43477746876F, eastTrain)
+						stopped = true
+					end
+					if GetDistanceBetweenCoords(stop.coords, GetEntityCoords(eastTrain)) > 15 then
+						stopped = false
+					end
 				end
 			end
 		end
