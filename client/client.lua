@@ -703,3 +703,55 @@ if Config.LuxuryTrainBartender then
 		end
 	end)
 end
+
+AddEventHandler('onResourceStop', function(resourceName)
+	if GetCurrentResourceName() == resourceName then
+		if Config.UseChristmasTrainEast or Config.UseChristmasTrainWest then
+			DeleteEntity(object)
+		end
+		if Config.UseNetwork then
+			if westTrain then
+				NetworkRequestControlOfEntity(westTrain)
+				if westTrainDriver then
+					NetworkRequestControlOfEntity(westTrainDriver)
+				end
+			end
+			if eastTrain then
+				NetworkRequestControlOfEntity(eastTrain)
+				if eastTrainDriver then
+					NetworkRequestControlOfEntity(eastTrainDriver)
+				end
+			end
+			if tram then
+				NetworkRequestControlOfEntity(tram)
+				if tramDriver then
+					NetworkRequestControlOfEntity(tramDriver)
+				end
+			end
+		end
+		if westTrain then
+			DeleteEntity(westTrain)
+			westTrain = nil
+			if westTrainDriver then
+				DeleteEntity(westTrainDriver)
+				westTrainDriver = nil
+			end
+		end
+		if eastTrain then
+			DeleteEntity(eastTrain)
+			eastTrain = nil
+			if eastTrainDriver then
+				DeleteEntity(eastTrainDriver)
+				eastTrainDriver = nil
+			end
+		end
+		if tram then
+			DeleteEntity(tram)
+			tram = nil
+			if tramDriver then
+				DeleteEntity(tramDriver)
+				tramDriver = nil
+			end
+		end
+	end
+end)
