@@ -442,6 +442,9 @@ RegisterNetEvent("vorp:SelectedCharacter", function()
 					TriggerServerEvent("BGS_Trains:UpdateTrainsAllPlayers")
 				end
 			end
+			if Config.UseEastTrain and eastTrain then
+				RenderTrainBlip(eastTrain, "east")
+			end
 			if Config.UseWestTrain and not westTrain then
 				if Config.UseNetwork then
 					SpawnWestTrain()
@@ -453,6 +456,9 @@ RegisterNetEvent("vorp:SelectedCharacter", function()
 					TriggerServerEvent("BGS_Trains:StoreServerTrainWest", westTrain)
 					TriggerServerEvent("BGS_Trains:UpdateTrainsAllPlayers")
 				end
+			end
+			if Config.UseWestTrain and westTrain then
+				RenderTrainBlip(westTrain, "west")
 			end
 			if Config.UseTrams and not tram then
 				if Config.UseNetwork then
@@ -513,9 +519,6 @@ CreateThread(function()
 	while true do
 		Wait(500)
 		if westTrain then
-			if not westBlipRendered then
-				RenderTrainBlip(westTrain, "west")
-			end
 			if not Config.RandomizeWestJunctions then
 				for i = 1, #Config.WestJunctions do
 					if GetDistanceBetweenCoords(GetEntityCoords(westTrain), Config.WestJunctions[i].coords) < 25 then
