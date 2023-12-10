@@ -18,14 +18,31 @@ local TrainModels = {
 local eastBartender
 local westBartender
 local prompt
-local inMenu = false
 
 -- Check for server stored train variables
 RegisterNetEvent("BGS_Trains:GetServerTrains")
-AddEventHandler("BGS_Trains:GetServerTrains", function(serverEastTrain, serverWestTrain, serverTram)
+AddEventHandler("BGS_Trains:GetServerTrains", function(serverEastTrain, serverWestTrain, serverTram, serverEastDriver, serverWestDriver, serverTramDriver)
+
+	eastTrain = nil
+	westTrain = nil
+	tram = nil
+
 	eastTrain = serverEastTrain
+	eastTrainDriver = serverEastDriver
+
+	if eastTrain then
+		RenderTrainBlip(eastTrain, "east")
+	end
+
 	westTrain = serverWestTrain
+	westTrainDriver = serverWestDriver
+
+	if westTrain then
+		RenderTrainBlip(westTrain, "west")
+	end
+
 	tram = serverTram
+	tramDriver = serverTramDriver
 end)
 
 -- Render train blips
@@ -33,11 +50,15 @@ function RenderTrainBlip(vehicle, line)
 	local TrainBlip = Citizen.InvokeNative(0x23F74C2FDA6E7C61, 1664425300, vehicle)
 	SetBlipSprite(TrainBlip, -250506368)
 	if line == "east" then
-		eastBlipRendered = true
-		Citizen.InvokeNative(0x9CB1A1623062F402, TrainBlip, Config.EastTrainBlipName)
+		if not eastBlipRendered then
+			Citizen.InvokeNative(0x9CB1A1623062F402, TrainBlip, Config.EastTrainBlipName)
+			eastBlipRendered = true
+		end
 	else
-		westBlipRendered = true
-		Citizen.InvokeNative(0x9CB1A1623062F402, TrainBlip, Config.WestTrainBlipName)
+		if not westBlipRendered then
+			Citizen.InvokeNative(0x9CB1A1623062F402, TrainBlip, Config.WestTrainBlipName)
+			westBlipRendered = true
+		end
 	end
 	SetBlipScale(TrainBlip, 1.0)
 end
@@ -55,13 +76,14 @@ local function WestTrainCreateVehicle(trainModel, loc, speed)
 	end
 
 	westTrain = Citizen.InvokeNative(0xC239DBD9A57D2A71, trainModel, loc.x, loc.y, loc.z, false, Config.EnablePassengers, true, true)
+	SetEntityAsMissionEntity(westTrain, true, true)
 	SetTrainSpeed(westTrain, speed)
 	SetTrainCruiseSpeed(westTrain, speed)
 	Citizen.InvokeNative(0x9F29999DFDF2AEB8, westTrain, speed)
 	Citizen.InvokeNative(0x4182C037AA1F0091, westTrain, true) 					-- Set train stops for stations
 	Citizen.InvokeNative(0x8EC47DD4300BF063, westTrain, 30.0) 					-- Set train offset for station
 
-	RenderTrainBlip(westTrain, "west")
+	-- RenderTrainBlip(westTrain, "west")
 
 	local trainDriverHandle = GetPedInVehicleSeat(westTrain, -1)
 	while not DoesEntityExist(trainDriverHandle) do
@@ -70,25 +92,25 @@ local function WestTrainCreateVehicle(trainModel, loc, speed)
 		Citizen.Wait(1)
 	end
 
-	westTrainDriver = trainDriverHandle
-
 	-- Make driver invincible
-	Citizen.InvokeNative(0xA5C38736C426FCB8, westTrainDriver, true)
-	Citizen.InvokeNative(0x9F8AA94D6D97DBF4, westTrainDriver, true)
-	Citizen.InvokeNative(0x63F58F7C80513AAD, westTrainDriver, false)
-	Citizen.InvokeNative(0x7A6535691B477C48, westTrainDriver, false)
-	SetBlockingOfNonTemporaryEvents(westTrainDriver, true)
+	Citizen.InvokeNative(0xA5C38736C426FCB8, trainDriverHandle, true)
+	Citizen.InvokeNative(0x9F8AA94D6D97DBF4, trainDriverHandle, true)
+	Citizen.InvokeNative(0x63F58F7C80513AAD, trainDriverHandle, false)
+	Citizen.InvokeNative(0x7A6535691B477C48, trainDriverHandle, false)
+	SetBlockingOfNonTemporaryEvents(trainDriverHandle, true)
 	Citizen.InvokeNative(0x05254BA0B44ADC16, westTrain, false)
-	SetEntityAsMissionEntity(westTrainDriver, true, true)
-	SetEntityCanBeDamaged(westTrainDriver, false)
-	Citizen.InvokeNative(0xFD6943B6DF77E449, westTrainDriver, false) -- Can't be lassoed
-	FreezeEntityPosition(westTrainDriver, true)
+	SetEntityAsMissionEntity(trainDriverHandle, true, true)
+	SetEntityCanBeDamaged(trainDriverHandle, false)
+	Citizen.InvokeNative(0xFD6943B6DF77E449, trainDriverHandle, false) -- Can't be lassoed
+	FreezeEntityPosition(trainDriverHandle, true)
 
 	-- Network the train and driver
 	if Config.UseNetwork then
 		NetworkRegisterEntityAsNetworked(westTrain)
-		NetworkRegisterEntityAsNetworked(westTrainDriver)
+		NetworkRegisterEntityAsNetworked(trainDriverHandle)
 	end
+
+	westTrainDriver = trainDriverHandle
 
 end
 
@@ -107,11 +129,12 @@ local function EastTrainCreateVehicle(trainModel, loc, speed)
 	eastTrain = Citizen.InvokeNative(0xC239DBD9A57D2A71, trainModel, loc.x, loc.y, loc.z, false, Config.EnablePassengers, true, true)
 	SetTrainSpeed(eastTrain, speed)
 	SetTrainCruiseSpeed(eastTrain, speed)
+	SetEntityAsMissionEntity(eastTrain, true, true)
 	Citizen.InvokeNative(0x9F29999DFDF2AEB8, eastTrain, speed)
 	Citizen.InvokeNative(0x4182C037AA1F0091, eastTrain, true) 					-- Set train stops for stations
 	Citizen.InvokeNative(0x8EC47DD4300BF063, eastTrain, 0.0) 					-- Set train offset for station
 
-	RenderTrainBlip(eastTrain, "east")
+	-- RenderTrainBlip(eastTrain, "east")
 
 	local trainDriverHandle = GetPedInVehicleSeat(eastTrain, -1)
 	while not DoesEntityExist(trainDriverHandle) do
@@ -120,25 +143,25 @@ local function EastTrainCreateVehicle(trainModel, loc, speed)
 		Citizen.Wait(1)
 	end
 
-	eastTrainDriver = trainDriverHandle
-
 	-- Make driver invincible
-	Citizen.InvokeNative(0xA5C38736C426FCB8, eastTrainDriver, true)
-	Citizen.InvokeNative(0x9F8AA94D6D97DBF4, eastTrainDriver, true)
-	Citizen.InvokeNative(0x63F58F7C80513AAD, eastTrainDriver, false)
-	Citizen.InvokeNative(0x7A6535691B477C48, eastTrainDriver, false)
-	SetBlockingOfNonTemporaryEvents(eastTrainDriver, true)
+	Citizen.InvokeNative(0xA5C38736C426FCB8, trainDriverHandle, true)
+	Citizen.InvokeNative(0x9F8AA94D6D97DBF4, trainDriverHandle, true)
+	Citizen.InvokeNative(0x63F58F7C80513AAD, trainDriverHandle, false)
+	Citizen.InvokeNative(0x7A6535691B477C48, trainDriverHandle, false)
+	SetBlockingOfNonTemporaryEvents(trainDriverHandle, true)
 	Citizen.InvokeNative(0x05254BA0B44ADC16, eastTrain, false)
-	SetEntityAsMissionEntity(eastTrainDriver, true, true)
-	SetEntityCanBeDamaged(eastTrainDriver, false)
-	Citizen.InvokeNative(0xFD6943B6DF77E449, eastTrainDriver, false) -- Can't be lassoed
-	FreezeEntityPosition(eastTrainDriver, true)
+	SetEntityAsMissionEntity(trainDriverHandle, true, true)
+	SetEntityCanBeDamaged(trainDriverHandle, false)
+	Citizen.InvokeNative(0xFD6943B6DF77E449, trainDriverHandle, false) -- Can't be lassoed
+	FreezeEntityPosition(trainDriverHandle, true)
 
 	-- Network the train and driver
 	if Config.UseNetwork then
 		NetworkRegisterEntityAsNetworked(eastTrain)
-		NetworkRegisterEntityAsNetworked(eastTrainDriver)
+		NetworkRegisterEntityAsNetworked(trainDriverHandle)
 	end
+
+	eastTrainDriver = trainDriverHandle
 
 end
 
@@ -155,6 +178,7 @@ local function TramCreateVehicle(trainModel, loc)
 	end
 
 	tram = Citizen.InvokeNative(0xC239DBD9A57D2A71, trainModel, loc, true, Config.EnablePassengers, true, true)
+	SetEntityAsMissionEntity(tram, true, true)
 	SetTrainSpeed(tram, 2.0)
 	Citizen.InvokeNative(0x4182C037AA1F0091, tram, true) 					-- Set train stops for stations
 	Citizen.InvokeNative(0x8EC47DD4300BF063, tram, 0.0) 					-- Set train offset for station
@@ -165,21 +189,21 @@ local function TramCreateVehicle(trainModel, loc)
 		Citizen.Wait(1)
 	end
 
-	tramDriver = trainDriverHandle
-
 	-- Make driver invincible
-	SetEntityAsMissionEntity(tramDriver, true, true)
-	SetEntityCanBeDamaged(tramDriver, false)
-	SetEntityInvincible(tramDriver, true)
-	FreezeEntityPosition(tramDriver, true)
-	SetBlockingOfNonTemporaryEvents(tramDriver, true)
-	Citizen.InvokeNative(0xFD6943B6DF77E449, tramDriver, false) -- Can't be lassoed
+	SetEntityAsMissionEntity(trainDriverHandle, true, true)
+	SetEntityCanBeDamaged(trainDriverHandle, false)
+	SetEntityInvincible(trainDriverHandle, true)
+	FreezeEntityPosition(trainDriverHandle, true)
+	SetBlockingOfNonTemporaryEvents(trainDriverHandle, true)
+	Citizen.InvokeNative(0xFD6943B6DF77E449, trainDriverHandle, false) -- Can't be lassoed
 
 	-- Network the train and driver
 	if Config.UseNetwork then
 		NetworkRegisterEntityAsNetworked(tram)
-		NetworkRegisterEntityAsNetworked(tramDriver)
+		NetworkRegisterEntityAsNetworked(trainDriverHandle)
 	end
+
+	tramDriver = trainDriverHandle
 
 end
 
@@ -434,43 +458,37 @@ RegisterNetEvent("vorp:SelectedCharacter", function()
 				if Config.UseNetwork then
 					SpawnEastTrain()
 					Wait(100)
-					TriggerServerEvent("BGS_Trains:StoreServerTrainEast", eastTrain)
+					TriggerServerEvent("BGS_Trains:StoreServerTrainEast", eastTrain, eastTrainDriver)
 				elseif GetDistanceBetweenCoords(GetEntityCoords(PlayerPedId()), Config.eastLoc) < 150 then
 					SpawnEastTrain()
 					Wait(100)
-					TriggerServerEvent("BGS_Trains:StoreServerTrainEast", eastTrain)
-					TriggerServerEvent("BGS_Trains:UpdateTrainsAllPlayers")
+					TriggerServerEvent("BGS_Trains:StoreServerTrainEast", eastTrain, eastTrainDriver)
 				end
-			end
-			if Config.UseEastTrain and eastTrain then
-				RenderTrainBlip(eastTrain, "east")
+				TriggerServerEvent("BGS_Trains:UpdateTrainsAllPlayers")
 			end
 			if Config.UseWestTrain and not westTrain then
 				if Config.UseNetwork then
 					SpawnWestTrain()
 					Wait(100)
-					TriggerServerEvent("BGS_Trains:StoreServerTrainWest", westTrain)
+					TriggerServerEvent("BGS_Trains:StoreServerTrainWest", westTrain, westTrainDriver)
 				elseif GetDistanceBetweenCoords(GetEntityCoords(PlayerPedId()), Config.westLoc) < 150 then
 					SpawnWestTrain()
 					Wait(100)
-					TriggerServerEvent("BGS_Trains:StoreServerTrainWest", westTrain)
-					TriggerServerEvent("BGS_Trains:UpdateTrainsAllPlayers")
+					TriggerServerEvent("BGS_Trains:StoreServerTrainWest", westTrain, westTrainDriver)
 				end
-			end
-			if Config.UseWestTrain and westTrain then
-				RenderTrainBlip(westTrain, "west")
+				TriggerServerEvent("BGS_Trains:UpdateTrainsAllPlayers")
 			end
 			if Config.UseTrams and not tram then
 				if Config.UseNetwork then
 					TramCreateVehicle(Config.Trolley, Config.tramLoc)
 					Wait(100)
-					TriggerServerEvent("BGS_Trains:StoreServerTram", tram)
+					TriggerServerEvent("BGS_Trains:StoreServerTram", tram, tramDriver)
 				elseif GetDistanceBetweenCoords(GetEntityCoords(PlayerPedId()), Config.tramLoc) < 150 then
 					TramCreateVehicle(Config.Trolley, Config.tramLoc)
 					Wait(100)
-					TriggerServerEvent("BGS_Trains:StoreServerTram", tram)
-					TriggerServerEvent("BGS_Trains:UpdateTrainsAllPlayers")
+					TriggerServerEvent("BGS_Trains:StoreServerTram", tram, tramDriver)
 				end
+				TriggerServerEvent("BGS_Trains:UpdateTrainsAllPlayers")
 			end
 		end
 	end)
@@ -526,21 +544,21 @@ CreateThread(function()
 						Citizen.InvokeNative(0x3ABFA128F5BF5A70, Config.WestJunctions[i].trainTrack, Config.WestJunctions[i].junctionIndex, Config.WestJunctions[i].enabled)
 					end
 				end
-				if Citizen.InvokeNative(0xE887BD31D97793F6, westTrain) then
+			end
+			if Citizen.InvokeNative(0xE887BD31D97793F6, westTrain) then
+				Citizen.InvokeNative(0x3660BCAB3A6BB734, westTrain)
+				Wait(Config.WestTrainStationWait*1000)
+				Citizen.InvokeNative(0x787E43477746876F, westTrain)
+			end
+			for index, stop in ipairs(Config.CustomStops) do
+				if GetDistanceBetweenCoords(stop.coords, GetEntityCoords(westTrain)) < 15 and not stopped then
 					Citizen.InvokeNative(0x3660BCAB3A6BB734, westTrain)
 					Wait(Config.WestTrainStationWait*1000)
 					Citizen.InvokeNative(0x787E43477746876F, westTrain)
+					stopped = true
 				end
-				for index, stop in ipairs(Config.CustomStops) do
-					if GetDistanceBetweenCoords(stop.coords, GetEntityCoords(westTrain)) < 15 and not stopped then
-						Citizen.InvokeNative(0x3660BCAB3A6BB734, westTrain)
-						Wait(Config.WestTrainStationWait*1000)
-						Citizen.InvokeNative(0x787E43477746876F, westTrain)
-						stopped = true
-					end
-					if GetDistanceBetweenCoords(stop.coords, GetEntityCoords(westTrain)) > 15 then
-						stopped = false
-					end
+				if GetDistanceBetweenCoords(stop.coords, GetEntityCoords(westTrain)) > 15 then
+					stopped = false
 				end
 			end
 		end
@@ -553,9 +571,6 @@ CreateThread(function()
 	while true do
 		Wait(500)
 		if eastTrain then
-			if not eastBlipRendered then
-				RenderTrainBlip(eastTrain, "east")
-			end
 			if not Config.RandomizeEastJunctions then
 				for i = 1, #Config.EastJunctions do
 					if GetDistanceBetweenCoords(GetEntityCoords(eastTrain), Config.EastJunctions[i].coords) < 15 then
@@ -570,21 +585,21 @@ CreateThread(function()
 						end
 					end
 				end
-				if Citizen.InvokeNative(0xE887BD31D97793F6, eastTrain) then
+			end
+			if Citizen.InvokeNative(0xE887BD31D97793F6, eastTrain) then
+				Citizen.InvokeNative(0x3660BCAB3A6BB734, eastTrain)
+				Wait(Config.EastTrainStationWait*1000)
+				Citizen.InvokeNative(0x787E43477746876F, eastTrain)
+			end
+			for index, stop in ipairs(Config.CustomStops) do
+				if GetDistanceBetweenCoords(stop.coords, GetEntityCoords(eastTrain)) < 15 and not stopped then
 					Citizen.InvokeNative(0x3660BCAB3A6BB734, eastTrain)
 					Wait(Config.EastTrainStationWait*1000)
 					Citizen.InvokeNative(0x787E43477746876F, eastTrain)
+					stopped = true
 				end
-				for index, stop in ipairs(Config.CustomStops) do
-					if GetDistanceBetweenCoords(stop.coords, GetEntityCoords(eastTrain)) < 15 and not stopped then
-						Citizen.InvokeNative(0x3660BCAB3A6BB734, eastTrain)
-						Wait(Config.EastTrainStationWait*1000)
-						Citizen.InvokeNative(0x787E43477746876F, eastTrain)
-						stopped = true
-					end
-					if GetDistanceBetweenCoords(stop.coords, GetEntityCoords(eastTrain)) > 15 then
-						stopped = false
-					end
+				if GetDistanceBetweenCoords(stop.coords, GetEntityCoords(eastTrain)) > 15 then
+					stopped = false
 				end
 			end
 		end
@@ -659,6 +674,13 @@ CreateThread(function()
 		end
     end
 end)
+
+-- CreateThread(function ()
+-- 	while true do
+-- 		Wait(100)
+-- 		print(Citizen.InvokeNative(0x2D0571BB55879DA2, PlayerPedId()))
+-- 	end
+-- end)
 
 -- Handle "luxury train" shit
 if Config.UseFancyTrainEast then
