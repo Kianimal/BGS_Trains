@@ -3,7 +3,7 @@ An ambient train script for RedM servers.
 
 This script is a resurrection of tr_trains, rebuilt in lua.
 Credits go to the author of ts_trains, as well as @Wartype and @t3chman for their help/info on track junctions and hashes.
-Credit also goes to @Hobbs for the Christmas train help and the random junctions feature!
+Credit also goes to @Hobbs for the Christmas train help and the random junctions feature (these WILL return to the script soon, I promise!)
 
 This script will add ambient trains to your server.
 
@@ -12,11 +12,11 @@ There is a train for the west, a train for the east, and a tram in Saint Denis.
 
 All of them will stop at the native stops in the game, and can be configured to be used at custom stops, as well!
 
-There is also a custom "luxury train" that can be spawned in, if desired.
-
 The tram goes with the direction of traffic in Saint Denis at all times, so as long as wagons are not stuck in its path they should sense and avoid it natively.
 Same goes for the trains, though these have been tested less than the trams have, particularly the western line.
 
 There are blips for the trains that can be renamed in the config.
 
 Junctions are configurable but I recommend not messing with them unless you know what you're doing.
+
+THIS SCRIPT IS A WORK IN PROGRESS! I appreciate your patience =D
