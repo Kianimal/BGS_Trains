@@ -127,11 +127,11 @@ end
 
 RegisterNetEvent("vorp:SelectedCharacter", function()
 	TriggerServerEvent("BGS_Trains:ReturnServerTrains", true)
-	Wait(1000)
+	Wait(100)
 	if not eastTrain then
 		if Config.UseEastTrain then
 			TrainCreateVehicle(Config.EastTrain, loc, "east")
-			TriggerServerEvent("BGS_Trains:StoreServerTrain", eastTrain)
+			TriggerServerEvent("BGS_Trains:StoreServerTrainEast", eastTrain)
 		end
 	elseif eastTrain then
 		RenderTrainBlip(eastTrain)
@@ -145,7 +145,7 @@ RegisterNetEvent("vorp:SelectedCharacter", function()
 	if westTrain == nil then
 		if Config.UseWestTrain then
 			TrainCreateVehicle(Config.WestTrain, loc3, "west")
-			TriggerServerEvent("BGS_Trains:StoreServerTrain", westTrain)
+			TriggerServerEvent("BGS_Trains:StoreServerTrainWest", westTrain)
 		end
 	elseif westTrain then
 		RenderTrainBlip(westTrain)

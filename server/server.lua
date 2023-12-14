@@ -40,7 +40,6 @@ AddEventHandler("playerDropped", function(reason)
 		eastTrain = nil
 		westTrain = nil
 		tram = nil
-		print(eastTrain, westTrain, tram)
 	end
 end)
 
