@@ -28,6 +28,11 @@ AddEventHandler("BGS_Trains:ReturnServerTrains", function(addToList)
 	TriggerClientEvent("BGS_Trains:GetServerTrains", _source, eastTrain, westTrain, tram)
 end)
 
+RegisterServerEvent("BGS_Trains:GetPlayerCount", function()
+	local _source = source
+	TriggerClientEvent("BGS_Trains:GetPlayerCount", _source, players)
+end)
+
 AddEventHandler("playerDropped", function(reason)
 	local _source = source
 	for index, player in ipairs(players) do
@@ -37,9 +42,20 @@ AddEventHandler("playerDropped", function(reason)
 		end
 	end
 	if #players < 1 then
-		eastTrain = nil
-		westTrain = nil
-		tram = nil
+		print(eastTrain, westTrain, tram)
+		if eastTrain then
+			DeleteEntity(eastTrain)
+			eastTrain = nil
+		end
+		if westTrain then
+			DeleteEntity(westTrain)
+			westTrain = nil
+		end
+		if tram then
+			DeleteEntity(tram)
+			tram = nil
+		end
+		print(eastTrain, westTrain, tram)
 	end
 end)
 

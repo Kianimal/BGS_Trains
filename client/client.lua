@@ -3,9 +3,17 @@ local westTrain = nil
 local eastTrain = nil
 local tram = nil
 
+local canSpawn = false
+
 local loc = vector3(2590.34, -1477.24, 45.86)
 local loc2 = vector3(2608.38, -1203.12, 53.16)
 local loc3 = vector3(-3763.37, -2782.54, -14.43)
+
+RegisterNetEvent("BGS_Trains:GetPlayerCount", function (players)
+	if #players <= 1 then
+		canSpawn = true
+	end
+end)
 
 RegisterNetEvent("BGS_Trains:GetServerTrains")
 AddEventHandler("BGS_Trains:GetServerTrains", function(serverTrainWest, serverTrainEast, serverTram)
@@ -127,28 +135,28 @@ end
 
 RegisterNetEvent("vorp:SelectedCharacter", function()
 	TriggerServerEvent("BGS_Trains:ReturnServerTrains", true)
+	TriggerServerEvent("BGS_Trains:GetPlayerCount")
 	Wait(100)
-	if not eastTrain then
+	if canSpawn then
 		if Config.UseEastTrain then
 			TrainCreateVehicle(Config.EastTrain, loc, "east")
 			TriggerServerEvent("BGS_Trains:StoreServerTrainEast", eastTrain)
 		end
-	elseif eastTrain then
-		RenderTrainBlip(eastTrain)
-	end
-	if tram == nil then
-		if Config.UseTrams then
-			TramCreateVehicle(Config.Trolley, loc2)
-			TriggerServerEvent("BGS_Trains:StoreServerTram", tram)
-		end
-	end
-	if westTrain == nil then
 		if Config.UseWestTrain then
 			TrainCreateVehicle(Config.WestTrain, loc3, "west")
 			TriggerServerEvent("BGS_Trains:StoreServerTrainWest", westTrain)
 		end
-	elseif westTrain then
-		RenderTrainBlip(westTrain)
+		if Config.UseTrams then
+			TramCreateVehicle(Config.Trolley, loc2)
+			TriggerServerEvent("BGS_Trains:StoreServerTram", tram)
+		end
+	else
+		if eastTrain then
+			RenderTrainBlip(eastTrain)
+		end
+		if westTrain then
+			RenderTrainBlip(westTrain)
+		end
 	end
 end)
 
