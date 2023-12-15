@@ -44,15 +44,12 @@ AddEventHandler("playerDropped", function(reason)
 	if #players < 1 then
 		print(eastTrain, westTrain, tram)
 		if eastTrain then
-			DeleteEntity(eastTrain)
 			eastTrain = nil
 		end
 		if westTrain then
-			DeleteEntity(westTrain)
 			westTrain = nil
 		end
 		if tram then
-			DeleteEntity(tram)
 			tram = nil
 		end
 		print(eastTrain, westTrain, tram)
