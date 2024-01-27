@@ -1,36 +1,39 @@
-local eastTrain = nil
-local westTrain = nil
-local tram = nil
+local spawned = false
 
 local players = {}
 
-RegisterServerEvent("BGS_Trains:StoreServerTram")
-AddEventHandler("BGS_Trains:StoreServerTram", function(clientTram)
-	tram = clientTram
-end)
+local eastTrain
+local westTrain
+local tram
 
-RegisterServerEvent("BGS_Trains:StoreServerTrainEast")
-AddEventHandler("BGS_Trains:StoreServerTrainEast", function(clientTrain)
-	eastTrain = clientTrain
-end)
-
-RegisterServerEvent("BGS_Trains:StoreServerTrainWest")
-AddEventHandler("BGS_Trains:StoreServerTrainWest", function(clientTrain)
-	westTrain = clientTrain
-end)
-
-RegisterServerEvent("BGS_Trains:ReturnServerTrains")
-AddEventHandler("BGS_Trains:ReturnServerTrains", function(addToList)
+RegisterServerEvent("BGS_Trains:server:CanSpawnTrain", function ()
 	local _source = source
-	if addToList then
-		table.insert(players, _source)
+	local canSpawn = false
+
+	table.insert(players, _source)
+
+	if not spawned then
+		spawned = true
+		canSpawn = true
 	end
-	TriggerClientEvent("BGS_Trains:GetServerTrains", _source, eastTrain, westTrain, tram)
+
+	TriggerClientEvent("BGS_Trains:client:CanSpawnTrain", _source, canSpawn)
 end)
 
-RegisterServerEvent("BGS_Trains:GetPlayerCount", function()
-	local _source = source
-	TriggerClientEvent("BGS_Trains:GetPlayerCount", _source, players)
+RegisterServerEvent("BGS_Trains:server:StoreNetIndex", function (netIndex, trainArea)
+	if trainArea == "east" then
+		eastTrain = netIndex
+	elseif trainArea == "west" then
+		westTrain = netIndex
+	else
+		tram = netIndex
+	end
+end)
+
+RegisterServerEvent("BGS_Trains:server:GetTrainsFromServer", function ()
+	local src = source
+	print(eastTrain, westTrain, tram)
+	TriggerClientEvent("BGS_Trains:client:GetTrainsFromServer", src, eastTrain, westTrain, tram)
 end)
 
 AddEventHandler("playerDropped", function(reason)
@@ -42,24 +45,13 @@ AddEventHandler("playerDropped", function(reason)
 		end
 	end
 	if #players < 1 then
-		print(eastTrain, westTrain, tram)
-		if eastTrain then
-			eastTrain = nil
-		end
-		if westTrain then
-			westTrain = nil
-		end
-		if tram then
-			tram = nil
-		end
-		print(eastTrain, westTrain, tram)
+		spawned = false
 	end
 end)
 
 AddEventHandler('onResourceStop', function(resourceName)
 	if GetCurrentResourceName() == resourceName then
-        eastTrain = nil
-		westTrain = nil
-		tram = nil
+        spawned = false
+		players = {}
 	end
 end)

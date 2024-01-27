@@ -97,7 +97,6 @@ Config.WestTrain = 0x10461E19                           -- appleseed_config = 0x
 
 Config.UseEastTrain = true
 Config.UseWestTrain = true
-
 Config.UseTrams = true
 
 Config.StationWaitTime = 30

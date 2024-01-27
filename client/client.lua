@@ -1,39 +1,33 @@
-local TrainBlip
-local westTrain = nil
-local eastTrain = nil
-local tram = nil
-
 local canSpawn = false
+
+local westTrain
+local eastTrain
+local tram
+
+local netIndex
 
 local loc = vector3(2590.34, -1477.24, 45.86)
 local loc2 = vector3(2608.38, -1203.12, 53.16)
 local loc3 = vector3(-3763.37, -2782.54, -14.43)
 
-RegisterNetEvent("BGS_Trains:GetPlayerCount", function (players)
-	if #players <= 1 then
-		canSpawn = true
+local function RenderTrainBlips()
+	local TrainBlip1
+	local TrainBlip2
+	if westTrain then
+		TrainBlip1 = Citizen.InvokeNative(0x23F74C2FDA6E7C61, 1664425300, westTrain)
+		SetBlipSprite(TrainBlip1, -250506368)
+		Citizen.InvokeNative(0x9CB1A1623062F402, TrainBlip1, Config.TrainBlipNameWest)
+		SetBlipScale(TrainBlip1, 1.0)
 	end
-end)
-
-RegisterNetEvent("BGS_Trains:GetServerTrains")
-AddEventHandler("BGS_Trains:GetServerTrains", function(serverTrainWest, serverTrainEast, serverTram)
-	westTrain = serverTrainWest
-	eastTrain = serverTrainEast
-	tram = serverTram
-end)
-
-function RenderTrainBlip(vehicle)
-	TrainBlip = Citizen.InvokeNative(0x23F74C2FDA6E7C61, 1664425300, vehicle)
-	SetBlipSprite(TrainBlip, -250506368)
-	if vehicle == eastTrain then
-		Citizen.InvokeNative(0x9CB1A1623062F402, TrainBlip, Config.TrainBlipNameEast)
-	else
-		Citizen.InvokeNative(0x9CB1A1623062F402, TrainBlip, Config.TrainBlipNameWest)
+	if eastTrain then
+		TrainBlip2 = Citizen.InvokeNative(0x23F74C2FDA6E7C61, 1664425300, eastTrain)
+		SetBlipSprite(TrainBlip2, -250506368)
+		Citizen.InvokeNative(0x9CB1A1623062F402, TrainBlip2, Config.TrainBlipNameEast)
+		SetBlipScale(TrainBlip2, 1.0)
 	end
-	SetBlipScale(TrainBlip, 1.0)
 end
 
-local function TrainCreateVehicle(trainModel, loc, line)
+local function TrainCreateVehicle(trainModel, location, trainArea)
 	local trainWagons = N_0x635423d55ca84fc8(trainModel)
 
 	for i = 0, trainWagons - 1 do
@@ -44,27 +38,17 @@ local function TrainCreateVehicle(trainModel, loc, line)
 		end
 	end
 
-	local train = Citizen.InvokeNative(0xC239DBD9A57D2A71, trainModel, loc.x, loc.y, loc.z, false, false, true, true)
+	local trainVeh = Citizen.InvokeNative(0xC239DBD9A57D2A71, trainModel, location.x, location.y, location.z, false, false, true, true)
 
-	if line == "east" then
-		eastTrain = train
-	end
+	SetTrainSpeed(trainVeh, Config.TrainMaxSpeed)
+	SetTrainCruiseSpeed(trainVeh, Config.TrainMaxSpeed)
+	Citizen.InvokeNative(0x9F29999DFDF2AEB8, trainVeh, Config.TrainMaxSpeed)
+	Citizen.InvokeNative(0x4182C037AA1F0091, trainVeh, true) 					-- Set train stops for stations
+	Citizen.InvokeNative(0x8EC47DD4300BF063, trainVeh, 0.0) 					-- Set train offset for station
 
-	if line == "west" then
-		westTrain = train
-	end
-
-	SetTrainSpeed(train, Config.TrainMaxSpeed)
-	SetTrainCruiseSpeed(train, Config.TrainMaxSpeed)
-	Citizen.InvokeNative(0x9F29999DFDF2AEB8, train, Config.TrainMaxSpeed)
-	Citizen.InvokeNative(0x4182C037AA1F0091, train, true) 					-- Set train stops for stations
-	Citizen.InvokeNative(0x8EC47DD4300BF063, train, 0.0) 					-- Set train offset for station
-
-	RenderTrainBlip(train)
-
-	local trainDriverHandle = GetPedInVehicleSeat(train, -1)
+	local trainDriverHandle = GetPedInVehicleSeat(trainVeh, -1)
 	while not DoesEntityExist(trainDriverHandle) do
-		trainDriverHandle = GetPedInVehicleSeat(train, -1)
+		trainDriverHandle = GetPedInVehicleSeat(trainVeh, -1)
 		SetEntityAsMissionEntity(trainDriverHandle, true, true)
 		Citizen.Wait(1)
 	end
@@ -74,12 +58,12 @@ local function TrainCreateVehicle(trainModel, loc, line)
 	Citizen.InvokeNative(0x63F58F7C80513AAD, trainDriverHandle, false)
 	Citizen.InvokeNative(0x7A6535691B477C48, trainDriverHandle, false)
 	SetBlockingOfNonTemporaryEvents(trainDriverHandle, true)
-	Citizen.InvokeNative(0x05254BA0B44ADC16, train, false)
+	Citizen.InvokeNative(0x05254BA0B44ADC16, trainVeh, false)
 	SetEntityAsMissionEntity(trainDriverHandle, true, true)
 	SetEntityCanBeDamaged(trainDriverHandle, false)
 
-	NetworkRegisterEntityAsNetworked(train)
-	SetNetworkIdExistsOnAllMachines(VehToNet(train), true)
+	NetworkRegisterEntityAsNetworked(trainVeh)
+	SetNetworkIdExistsOnAllMachines(VehToNet(trainVeh), true)
 	NetworkRegisterEntityAsNetworked(trainDriverHandle)
 	SetNetworkIdExistsOnAllMachines(PedToNet(trainDriverHandle), true)
 
@@ -93,9 +77,11 @@ local function TrainCreateVehicle(trainModel, loc, line)
 		end
 	end)
 
+	TriggerServerEvent("BGS_Trains:server:StoreNetIndex", VehToNet(trainVeh), trainArea)
+
 end
 
-local function TramCreateVehicle(trainModel, loc)
+local function TramCreateVehicle(trainModel, location)
 	local trainWagons = N_0x635423d55ca84fc8(trainModel)
 
 	for i = 0, trainWagons - 1 do
@@ -106,14 +92,14 @@ local function TramCreateVehicle(trainModel, loc)
 		end
 	end
 
-	tram = Citizen.InvokeNative(0xC239DBD9A57D2A71, trainModel, loc, true, false, true, true)
-	SetTrainSpeed(tram, 2.0)
-	Citizen.InvokeNative(0x4182C037AA1F0091, tram, true) 					-- Set train stops for stations
-	Citizen.InvokeNative(0x8EC47DD4300BF063, tram, 0.0) 					-- Set train offset for station
+	local tramVeh = Citizen.InvokeNative(0xC239DBD9A57D2A71, trainModel, location, true, false, true, true)
+	SetTrainSpeed(tramVeh, 2.0)
+	Citizen.InvokeNative(0x4182C037AA1F0091, tramVeh, true) 					-- Set train stops for stations
+	Citizen.InvokeNative(0x8EC47DD4300BF063, tramVeh, 0.0) 					-- Set train offset for station
 
-	local trainDriverHandle = GetPedInVehicleSeat(tram, -1)
+	local trainDriverHandle = GetPedInVehicleSeat(tramVeh, -1)
 	while not DoesEntityExist(trainDriverHandle) do
-		trainDriverHandle = GetPedInVehicleSeat(tram, -1)
+		trainDriverHandle = GetPedInVehicleSeat(tramVeh, -1)
 		Citizen.Wait(1)
 	end
 
@@ -123,41 +109,51 @@ local function TramCreateVehicle(trainModel, loc)
 	FreezeEntityPosition(trainDriverHandle, true)
 	SetBlockingOfNonTemporaryEvents(trainDriverHandle, true)
 
-	NetworkRegisterEntityAsNetworked(tram)
+	NetworkRegisterEntityAsNetworked(tramVeh)
 	NetworkRegisterEntityAsNetworked(trainDriverHandle)
 
-	NetworkRegisterEntityAsNetworked(tram)
-	SetNetworkIdExistsOnAllMachines(VehToNet(tram), true)
+	NetworkRegisterEntityAsNetworked(tramVeh)
+	SetNetworkIdExistsOnAllMachines(VehToNet(tramVeh), true)
 	NetworkRegisterEntityAsNetworked(trainDriverHandle)
 	SetNetworkIdExistsOnAllMachines(PedToNet(trainDriverHandle), true)
+
+	TriggerServerEvent("BGS_Trains:server:StoreNetIndex", VehToNet(tramVeh))
 
 end
 
 RegisterNetEvent("vorp:SelectedCharacter", function()
-	TriggerServerEvent("BGS_Trains:ReturnServerTrains", true)
-	TriggerServerEvent("BGS_Trains:GetPlayerCount")
+	TriggerServerEvent("BGS_Trains:server:CanSpawnTrain")
 	Wait(100)
 	if canSpawn then
 		if Config.UseEastTrain then
 			TrainCreateVehicle(Config.EastTrain, loc, "east")
-			TriggerServerEvent("BGS_Trains:StoreServerTrainEast", eastTrain)
 		end
 		if Config.UseWestTrain then
 			TrainCreateVehicle(Config.WestTrain, loc3, "west")
-			TriggerServerEvent("BGS_Trains:StoreServerTrainWest", westTrain)
 		end
 		if Config.UseTrams then
 			TramCreateVehicle(Config.Trolley, loc2)
-			TriggerServerEvent("BGS_Trains:StoreServerTram", tram)
 		end
+		Wait(1000)
+		TriggerServerEvent("BGS_Trains:server:GetTrainsFromServer")
+		Wait(1000)
+		RenderTrainBlips()
 	else
-		if eastTrain then
-			RenderTrainBlip(eastTrain)
-		end
-		if westTrain then
-			RenderTrainBlip(westTrain)
-		end
+		TriggerServerEvent("BGS_Trains:server:GetTrainsFromServer")
+		Wait(1000)
+		RenderTrainBlips()
 	end
+end)
+
+RegisterNetEvent("BGS_Trains:client:CanSpawnTrain", function(canSpawnTrains)
+	canSpawn = canSpawnTrains
+end)
+
+RegisterNetEvent("BGS_Trains:client:GetTrainsFromServer", function (eastNet, westNet, tramNet)
+	print(eastNet, westNet, tramNet)
+	eastTrain = NetToVeh(eastNet)
+	westTrain = NetToVeh(westNet)
+	tram = NetToVeh(tramNet)
 end)
 
 -- Handle west train shit
@@ -257,23 +253,6 @@ CreateThread(function()
 					end
 				end
 			end
-		end
-	end
-end)
-
-AddEventHandler('onResourceStop', function(resourceName)
-	if GetCurrentResourceName() == resourceName then
-		if westTrain then
-			DeleteEntity(westTrain)
-			westTrain = nil
-		end
-		if eastTrain then
-			DeleteEntity(eastTrain)
-			eastTrain = nil
-		end
-		if tram then
-			DeleteEntity(tram)
-			tram = nil
 		end
 	end
 end)
