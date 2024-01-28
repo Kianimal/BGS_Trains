@@ -63,6 +63,7 @@ local function IsTrain(vehicle)
     return false
 end
 
+-- Decorate Christmas train
 local function DecorateTrain(vehicle)
     object = CreateObjectNoOffset(GetHashKey('mp006_p_veh_xmasnsteamer01x'), 0, 0, 0, false, false, false, false)
     AttachEntityToEntity(object, vehicle, 0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, false, false, false, false, 0, true, false, false)
@@ -100,11 +101,10 @@ local function HandleChristmasTrains()
 	end)
 end
 
+-- Render train blips after values are retrieved from server
 local function RenderTrainBlips()
 	local TrainBlip1
 	local TrainBlip2
-	print(westTrain)
-	print(eastTrain)
 	if westTrain then
 		TrainBlip1 = Citizen.InvokeNative(0x23F74C2FDA6E7C61, 1664425300, westTrain)
 		SetBlipSprite(TrainBlip1, -250506368)
@@ -119,6 +119,7 @@ local function RenderTrainBlips()
 	end
 end
 
+-- Create train and tram vehicles, network and store server side
 local function TrainCreateVehicle(trainModel, location, trainArea)
 	local trainWagons = N_0x635423d55ca84fc8(trainModel)
 
@@ -164,7 +165,6 @@ end
 
 -- Prevent people from knocking driver out of train
 local function ProtectTrainDriver(trainDriverHandle)
-	print("protecting driver")
 	if trainDriverHandle then
 		SetPedCanBeKnockedOffVehicle(trainDriverHandle, 1)
 		SetEntityInvincible(trainDriverHandle, true)
@@ -331,7 +331,6 @@ CreateThread(function()
 	while true do
 		Wait(250)
 		if tram then
-			-- SetTrainSpeed(tram, 2.0)
 			local coords = GetEntityCoords(tram)
         	local traincoords = vector3(coords.x, coords.y, coords.z)
 			for i = 1, #Config.RouteOneTramSwitches do
