@@ -350,3 +350,180 @@ CreateThread(function()
 		end
 	end
 end)
+
+-- Handle "luxury train" shit
+-- if Config.UseFancyTrainEast then
+-- 	CreateThread(function()
+-- 		local deleted = false
+-- 		local attached = false
+-- 		local spawned = false
+-- 		local propset
+-- 		local propset2
+-- 		local propsetHash
+-- 		local propsetHash2
+
+-- 		while true do
+-- 			Wait(1000)
+-- 			if eastTrain then
+
+-- 				local carriage = Citizen.InvokeNative(0xD0FB093A4CDB932C, eastTrain, 3)
+-- 				local carriage2 = Citizen.InvokeNative(0xD0FB093A4CDB932C, eastTrain, 4)
+-- 				local carriage3 = Citizen.InvokeNative(0xD0FB093A4CDB932C, eastTrain, 6)
+-- 				local carriage4 = Citizen.InvokeNative(0xD0FB093A4CDB932C, eastTrain, 5)
+
+-- 				if GetDistanceBetweenCoords(GetEntityCoords(PlayerPedId()), GetEntityCoords(carriage4)) < 150 and not Config.UseNetwork then
+-- 					propset = Citizen.InvokeNative(0xCFC0BD09BB1B73FF, carriage)
+-- 					propsetHash = Citizen.InvokeNative(0xA6A9712955F53D9C, propset)
+
+-- 					propset2 = Citizen.InvokeNative(0xCFC0BD09BB1B73FF, carriage2)
+-- 					propsetHash2 = Citizen.InvokeNative(0xA6A9712955F53D9C, propset2)
+
+-- 					if Citizen.InvokeNative(0xF42DB680A8B2A4D9, propset) and (Citizen.InvokeNative(0xF42DB680A8B2A4D9, propset2)) and not deleted then
+-- 						while not (Citizen.InvokeNative(0x48A88FC684C55FDC, propsetHash) and Citizen.InvokeNative(0x48A88FC684C55FDC, propsetHash2)) do
+-- 							Wait(1)
+-- 						end
+-- 						Citizen.InvokeNative(0x3BCF32FF37EA9F1D, carriage)
+-- 						Citizen.InvokeNative(0x3BCF32FF37EA9F1D, carriage2)
+-- 						deleted = true
+-- 					end
+
+-- 					if not attached then
+
+-- 						local request = Citizen.InvokeNative(0xF3DE57A46D5585E9, barPropsHash)
+-- 						local request2 = Citizen.InvokeNative(0xF3DE57A46D5585E9, sleeperPropsHash)
+
+-- 						while not Citizen.InvokeNative(0x48A88FC684C55FDC, barPropsHash) do
+-- 							Wait(1)
+-- 						end
+
+-- 						while not Citizen.InvokeNative(0x48A88FC684C55FDC, sleeperPropsHash) do
+-- 							Wait(1)
+-- 						end
+
+-- 						local barPropsetOnTrain = Citizen.InvokeNative(0x9609DBDDE18FAD8C, barPropsHash, 0, 0, 0, carriage, 0, true, 0, true)
+-- 						local sleeperPropsetOnTrain = Citizen.InvokeNative(0x9609DBDDE18FAD8C, sleeperPropsHash, 0, 0, 0, carriage2, 0, true, 0, true)
+
+-- 						attached = true
+-- 					end
+
+-- 					if not spawned and Config.UseEastTrainBartender then
+-- 						local coords = GetEntityCoords(carriage)
+
+-- 						local scenario_type_hash = joaat("WORLD_HUMAN_BARTENDER_CLEAN_GLASS")
+-- 						local scenario_duration = -1  -- (1000 = 1 second, -1 = forever)
+-- 						local must_play_enter_anim = true
+-- 						local optional_conditional_anim_hash = joaat("WORLD_HUMAN_BARTENDER_CLEAN_GLASS_MALE_B")  -- 0 = play random conditional anim. Every conditional anim has requirements to play it. If requirements are not met, ped plays random allowed conditional anim or can be stuck. For example, this scenario type have possible conditional anim "WORLD_HUMAN_LEAN_BACK_WALL_SMOKING_MALE_D", but it can not be played by player, because condition is set to NOT be CAIConditionIsPlayer (check file amb_rest.meta and amb_rest_CA.meta with OPENIV to clarify requirements). 
+-- 						local unknown_5 = -1.0
+-- 						local unknown_6 = 0
+
+-- 						eastTrainBartender = CreatePed(518339740, coords.x+0.85, coords.y+1.25, coords.z+0.5, GetEntityHeading(carriage), true, false, false, false)
+-- 						SetPedRandomComponentVariation(eastTrainBartender, 0)
+-- 						Citizen.InvokeNative(0xA5C38736C426FCB8, eastTrainBartender, true)
+-- 						Citizen.InvokeNative(0x9F8AA94D6D97DBF4, eastTrainBartender, true)
+-- 						Citizen.InvokeNative(0x63F58F7C80513AAD, eastTrainBartender, false)
+-- 						Citizen.InvokeNative(0x7A6535691B477C48, eastTrainBartender, false)
+-- 						SetBlockingOfNonTemporaryEvents(eastTrainBartender, true)
+-- 						SetEntityAsMissionEntity(eastTrainBartender, true, true)
+-- 						SetEntityCanBeDamaged(eastTrainBartender, false)
+
+-- 						if Config.UseNetwork then
+-- 							NetworkRegisterEntityAsNetworked(eastTrainBartender)
+-- 						end
+
+-- 						Citizen.InvokeNative(0x524B54361229154F, eastTrainBartender, scenario_type_hash, scenario_duration, must_play_enter_anim, optional_conditional_anim_hash, unknown_5, unknown_6)
+-- 						spawned = true
+-- 						TriggerServerEvent("BGS_Trains:StoreServerTrainEast", eastTrain, eastTrainBartender)
+-- 					end
+
+-- 					Citizen.InvokeNative(0xB1964A83B345B4AB, barPropsHash)
+-- 					Citizen.InvokeNative(0xB1964A83B345B4AB, sleeperPropsHash)
+
+-- 					Citizen.InvokeNative(0x550CE392A4672412, carriage3, 9, true, true)			-- Open fancy cabin doors
+-- 					Citizen.InvokeNative(0x550CE392A4672412, carriage3, 10, true, true)			-- Open fancy cabin doors
+-- 					Citizen.InvokeNative(0x550CE392A4672412, carriage3, 11, true, true)			-- Open fancy cabin doors
+
+-- 					Citizen.InvokeNative(0x550CE392A4672412, carriage4, 9, true, true)			-- Open fancy cabin doors
+-- 					Citizen.InvokeNative(0x550CE392A4672412, carriage4, 10, true, true)			-- Open fancy cabin doors
+-- 					Citizen.InvokeNative(0x550CE392A4672412, carriage4, 11, true, true)			-- Open fancy cabin doors
+
+-- 				elseif Config.UseNetwork then
+-- 					propset = Citizen.InvokeNative(0xCFC0BD09BB1B73FF, carriage)
+-- 					propsetHash = Citizen.InvokeNative(0xA6A9712955F53D9C, propset)
+
+-- 					propset2 = Citizen.InvokeNative(0xCFC0BD09BB1B73FF, carriage2)
+-- 					propsetHash2 = Citizen.InvokeNative(0xA6A9712955F53D9C, propset2)
+
+-- 					if Citizen.InvokeNative(0xF42DB680A8B2A4D9, propset) and (Citizen.InvokeNative(0xF42DB680A8B2A4D9, propset2)) and not deleted then
+-- 						while not (Citizen.InvokeNative(0x48A88FC684C55FDC, propsetHash) and Citizen.InvokeNative(0x48A88FC684C55FDC, propsetHash2)) do
+-- 							Wait(1)
+-- 						end
+-- 						Citizen.InvokeNative(0x3BCF32FF37EA9F1D, carriage)
+-- 						Citizen.InvokeNative(0x3BCF32FF37EA9F1D, carriage2)
+-- 						deleted = true
+-- 					end
+
+-- 					if not attached then
+
+-- 						local request = Citizen.InvokeNative(0xF3DE57A46D5585E9, barPropsHash)
+-- 						local request2 = Citizen.InvokeNative(0xF3DE57A46D5585E9, sleeperPropsHash)
+
+-- 						while not Citizen.InvokeNative(0x48A88FC684C55FDC, barPropsHash) do
+-- 							Wait(1)
+-- 						end
+
+-- 						while not Citizen.InvokeNative(0x48A88FC684C55FDC, sleeperPropsHash) do
+-- 							Wait(1)
+-- 						end
+
+-- 						local barPropsetOnTrain = Citizen.InvokeNative(0x9609DBDDE18FAD8C, barPropsHash, 0, 0, 0, carriage, 0, true, 0, true)
+-- 						local sleeperPropsetOnTrain = Citizen.InvokeNative(0x9609DBDDE18FAD8C, sleeperPropsHash, 0, 0, 0, carriage2, 0, true, 0, true)
+
+-- 						attached = true
+-- 					end
+
+-- 					if not spawned and Config.UseEastTrainBartender then
+-- 						local coords = GetEntityCoords(carriage)
+
+-- 						local scenario_type_hash = joaat("WORLD_HUMAN_BARTENDER_CLEAN_GLASS")
+-- 						local scenario_duration = -1  -- (1000 = 1 second, -1 = forever)
+-- 						local must_play_enter_anim = true
+-- 						local optional_conditional_anim_hash = joaat("WORLD_HUMAN_BARTENDER_CLEAN_GLASS_MALE_B")  -- 0 = play random conditional anim. Every conditional anim has requirements to play it. If requirements are not met, ped plays random allowed conditional anim or can be stuck. For example, this scenario type have possible conditional anim "WORLD_HUMAN_LEAN_BACK_WALL_SMOKING_MALE_D", but it can not be played by player, because condition is set to NOT be CAIConditionIsPlayer (check file amb_rest.meta and amb_rest_CA.meta with OPENIV to clarify requirements). 
+-- 						local unknown_5 = -1.0
+-- 						local unknown_6 = 0
+
+-- 						eastTrainBartender = CreatePed(518339740, coords.x+0.85, coords.y+1.25, coords.z+0.5, GetEntityHeading(carriage), true, false, false, false)
+-- 						SetPedRandomComponentVariation(eastTrainBartender, 0)
+-- 						Citizen.InvokeNative(0xA5C38736C426FCB8, eastTrainBartender, true)
+-- 						Citizen.InvokeNative(0x9F8AA94D6D97DBF4, eastTrainBartender, true)
+-- 						Citizen.InvokeNative(0x63F58F7C80513AAD, eastTrainBartender, false)
+-- 						Citizen.InvokeNative(0x7A6535691B477C48, eastTrainBartender, false)
+-- 						SetBlockingOfNonTemporaryEvents(eastTrainBartender, true)
+-- 						SetEntityAsMissionEntity(eastTrainBartender, true, true)
+-- 						SetEntityCanBeDamaged(eastTrainBartender, false)
+
+-- 						if Config.UseNetwork then
+-- 							NetworkRegisterEntityAsNetworked(eastTrainBartender)
+-- 						end
+
+-- 						Citizen.InvokeNative(0x524B54361229154F, eastTrainBartender, scenario_type_hash, scenario_duration, must_play_enter_anim, optional_conditional_anim_hash, unknown_5, unknown_6)
+-- 						spawned = true
+-- 						TriggerServerEvent("BGS_Trains:StoreServerTrainEast", eastTrain, eastTrainBartender)
+-- 					end
+
+-- 					Citizen.InvokeNative(0xB1964A83B345B4AB, barPropsHash)
+-- 					Citizen.InvokeNative(0xB1964A83B345B4AB, sleeperPropsHash)
+
+-- 					Citizen.InvokeNative(0x550CE392A4672412, carriage3, 9, true, true)			-- Open fancy cabin doors
+-- 					Citizen.InvokeNative(0x550CE392A4672412, carriage3, 10, true, true)			-- Open fancy cabin doors
+-- 					Citizen.InvokeNative(0x550CE392A4672412, carriage3, 11, true, true)			-- Open fancy cabin doors
+
+-- 					Citizen.InvokeNative(0x550CE392A4672412, carriage4, 9, true, true)			-- Open fancy cabin doors
+-- 					Citizen.InvokeNative(0x550CE392A4672412, carriage4, 10, true, true)			-- Open fancy cabin doors
+-- 					Citizen.InvokeNative(0x550CE392A4672412, carriage4, 11, true, true)			-- Open fancy cabin doors
+					
+-- 				end
+				
+-- 			end
+-- 		end
+-- 	end)
+-- end
