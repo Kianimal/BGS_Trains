@@ -10,8 +10,11 @@ Config.UseEastTrain = true
 Config.UseWestTrain = true
 Config.UseTram = true
 
-Config.UseChristmasTrainEast = true
-Config.UseChristmasTrainWest = true
+Config.UseChristmasTrainEast = false
+Config.UseChristmasTrainWest = false
+
+Config.UseFancyTrainEast = true
+Config.UseFancyTrainWest = false
 
 Config.TrainBlipNameEast = "BGS East Line"
 Config.TrainBlipNameWest = "BGS West Line"
