@@ -2,6 +2,17 @@ Config = {}
 
 Config.TrainMaxSpeed = 10.0
 
+Config.EastTrainSpawnLocation = vec3(2590.34, -1477.24, 45.86)
+Config.WestTrainSpawnLocation = vec3(-3763.37, -2782.54, -14.43)
+Config.TramSpawnLocation =      vec3(2608.38, -1203.12, 53.16)
+
+Config.UseEastTrain = true
+Config.UseWestTrain = true
+Config.UseTrams = true
+
+Config.UseChristmasTrainEast = true
+Config.UseChristmasTrainWest = true
+
 Config.TrainBlipNameEast = "BGS East Line"
 Config.TrainBlipNameWest = "BGS West Line"
 
@@ -94,10 +105,6 @@ Config.WestTrain = 0x10461E19                           -- appleseed_config = 0x
                                                         -- _0xFAB2FFB9 = 0xFAB2FFB9,
                                                         -- _0xFAC328F0 = 0xFAC328F0,
                                                         -- _0xFD8810E8 = 0xFD8810E8,
-
-Config.UseEastTrain = true
-Config.UseWestTrain = true
-Config.UseTrams = true
 
 Config.StationWaitTime = 30
 

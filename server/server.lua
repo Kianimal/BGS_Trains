@@ -3,8 +3,11 @@ local spawned = false
 local players = {}
 
 local eastTrain
+local eastConductor
 local westTrain
+local westConductor
 local tram
+local tramConductor
 
 RegisterServerEvent("BGS_Trains:server:CanSpawnTrain", function ()
 	local _source = source
@@ -20,20 +23,22 @@ RegisterServerEvent("BGS_Trains:server:CanSpawnTrain", function ()
 	TriggerClientEvent("BGS_Trains:client:CanSpawnTrain", _source, canSpawn)
 end)
 
-RegisterServerEvent("BGS_Trains:server:StoreNetIndex", function (netIndex, trainArea)
+RegisterServerEvent("BGS_Trains:server:StoreNetIndex", function (trainNetIndex, driverNetIndex, trainArea)
 	if trainArea == "east" then
-		eastTrain = netIndex
+		eastTrain = trainNetIndex
+		eastConductor = driverNetIndex
 	elseif trainArea == "west" then
-		westTrain = netIndex
+		westTrain = trainNetIndex
+		westConductor = driverNetIndex
 	else
-		tram = netIndex
+		tram = trainNetIndex
+		tramConductor = driverNetIndex
 	end
 end)
 
 RegisterServerEvent("BGS_Trains:server:GetTrainsFromServer", function ()
 	local src = source
-	print(eastTrain, westTrain, tram)
-	TriggerClientEvent("BGS_Trains:client:GetTrainsFromServer", src, eastTrain, westTrain, tram)
+	TriggerClientEvent("BGS_Trains:client:GetTrainsFromServer", src, eastTrain, westTrain, tram, eastConductor, westConductor, tramConductor)
 end)
 
 AddEventHandler("playerDropped", function(reason)
