@@ -8,7 +8,7 @@ Config.TramSpawnLocation =      vec3(2608.38, -1203.12, 53.16)
 
 Config.UseEastTrain = true
 Config.UseWestTrain = true
-Config.UseTrams = true
+Config.UseTram = true
 
 Config.UseChristmasTrainEast = true
 Config.UseChristmasTrainWest = true
