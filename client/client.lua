@@ -117,6 +117,7 @@ local function SpawnBartender(carriage)
 		-1, true, joaat("WORLD_HUMAN_BARTENDER_CLEAN_GLASS_MALE_B"), -1.0, 0)
 
 	if DoesEntityExist(bartender) then
+		AttachEntityToEntity(bartender, carriage, 14, 0, 0.5, 0.40, 0, 0, 0, false, false, false, true, 0, true)
 		CreateThread(function ()
 			while true do
 				Wait(1000)
@@ -125,6 +126,8 @@ local function SpawnBartender(carriage)
 		end)
 		return true
 	end
+
+	return false
 end
 
 local function ReplaceCabinInterior(carriage, interior)
@@ -173,9 +176,9 @@ local function HandleFancyTrain(train)
 				if not barCreated or not sleepersCreated then
 					if not barCreated then
 						barCreated = ReplaceCabinInterior(carriage, -1747631964)
-						if not bartenderSpawned then
-							bartenderSpawned = SpawnBartender(carriage)
-						end
+					end
+					if not bartenderSpawned then
+						bartenderSpawned = SpawnBartender(carriage)
 					end
 					if not sleepersCreated then
 						sleepersCreated = ReplaceCabinInterior(carriage2, -317994478)
@@ -208,56 +211,60 @@ end
 
 -- Create train and tram vehicles, network and store server side
 local function TrainCreateVehicle(trainModel, location, trainArea)
-	local trainWagons = N_0x635423d55ca84fc8(trainModel)
 
-	for i = 0, trainWagons - 1 do
-		local trainWagonModel = N_0x8df5f6a19f99f0d5(trainModel, i)
-		RequestModel(trainWagonModel)
-		while not HasModelLoaded(trainWagonModel) do
-			Citizen.Wait(0)
-		end
-	end
-
-	local trainVeh
-
-	if trainModel ~= Config.Trolley then
-		trainVeh = Citizen.InvokeNative(0xC239DBD9A57D2A71, trainModel, location, false, false, true, true)
-		SetTrainSpeed(trainVeh, Config.TrainMaxSpeed)
-		SetTrainCruiseSpeed(trainVeh, Config.TrainMaxSpeed)
-		Citizen.InvokeNative(0x9F29999DFDF2AEB8, trainVeh, Config.TrainMaxSpeed)
-		Citizen.InvokeNative(0x4182C037AA1F0091, trainVeh, true) 					-- Set train stops for stations
-		Citizen.InvokeNative(0x8EC47DD4300BF063, trainVeh, 0.0) 					-- Set train offset for station
-	else
-		trainVeh = Citizen.InvokeNative(0xC239DBD9A57D2A71, trainModel, location, true, false, true, true)
-		SetTrainSpeed(trainVeh, 2.0)
-		Citizen.InvokeNative(0x4182C037AA1F0091, trainVeh, true) 					-- Set train stops for stations
-		Citizen.InvokeNative(0x8EC47DD4300BF063, trainVeh, 0.0) 					-- Set train offset for station
-	end
-
-	local trainDriverHandle = GetPedInVehicleSeat(trainVeh, -1)
-	while not DoesEntityExist(trainDriverHandle) do
-		trainDriverHandle = GetPedInVehicleSeat(trainVeh, -1)
-		SetEntityAsMissionEntity(trainDriverHandle, true, true)
-		Citizen.Wait(1)
-	end
-
-	NetworkRegisterEntityAsNetworked(trainVeh)
-	SetNetworkIdExistsOnAllMachines(VehToNet(trainVeh), true)
-	NetworkRegisterEntityAsNetworked(trainDriverHandle)
-	SetNetworkIdExistsOnAllMachines(PedToNet(trainDriverHandle), true)
+	print("train creation thread has run")
 
 	CreateThread(function ()
 		while true do
 			Wait(1000)
+			local trainWagons = N_0x635423d55ca84fc8(trainModel)
+
+			for i = 0, trainWagons - 1 do
+				local trainWagonModel = N_0x8df5f6a19f99f0d5(trainModel, i)
+				RequestModel(trainWagonModel)
+				while not HasModelLoaded(trainWagonModel) do
+					Citizen.Wait(0)
+				end
+			end
+
+			local trainVeh
+
+			if trainModel ~= Config.Trolley then
+				trainVeh = Citizen.InvokeNative(0xC239DBD9A57D2A71, trainModel, location, false, false, true, true)
+				SetTrainSpeed(trainVeh, Config.TrainMaxSpeed)
+				SetTrainCruiseSpeed(trainVeh, Config.TrainMaxSpeed)
+				Citizen.InvokeNative(0x9F29999DFDF2AEB8, trainVeh, Config.TrainMaxSpeed)
+				Citizen.InvokeNative(0x4182C037AA1F0091, trainVeh, true) 					-- Set train stops for stations
+				Citizen.InvokeNative(0x8EC47DD4300BF063, trainVeh, 0.0) 					-- Set train offset for station
+			else
+				trainVeh = Citizen.InvokeNative(0xC239DBD9A57D2A71, trainModel, location, true, false, true, true)
+				SetTrainSpeed(trainVeh, 2.0)
+				Citizen.InvokeNative(0x4182C037AA1F0091, trainVeh, true) 					-- Set train stops for stations
+				Citizen.InvokeNative(0x8EC47DD4300BF063, trainVeh, 0.0) 					-- Set train offset for station
+			end
+
+			local trainDriverHandle = GetPedInVehicleSeat(trainVeh, -1)
+			while not DoesEntityExist(trainDriverHandle) do
+				trainDriverHandle = GetPedInVehicleSeat(trainVeh, -1)
+				SetEntityAsMissionEntity(trainDriverHandle, true, true)
+				Citizen.Wait(1)
+			end
+
+			NetworkRegisterEntityAsNetworked(trainVeh)
+			SetNetworkIdExistsOnAllMachines(VehToNet(trainVeh), true)
+			NetworkRegisterEntityAsNetworked(trainDriverHandle)
+			SetNetworkIdExistsOnAllMachines(PedToNet(trainDriverHandle), true)
+
+			print(trainVeh)
+
 			if DoesEntityExist(trainVeh) then
-				if NetworkDoesNetworkIdExist(VehToNet(trainVeh)) then
-					TriggerServerEvent("BGS_Trains:server:StoreNetIndex", VehToNet(trainVeh), PedToNet(trainDriverHandle), trainArea)
-					break
+				if NetworkDoesNetworkIdExist(NetworkGetNetworkIdFromEntity(trainVeh)) then
+					TriggerServerEvent("BGS_Trains:server:StoreNetIndex", NetworkGetNetworkIdFromEntity(trainVeh), NetworkGetNetworkIdFromEntity(trainDriverHandle), trainArea)
+					return
 				end
 			end
 		end
 	end)
-
 end
 
 -- Prevent people from knocking driver out of train
@@ -282,8 +289,9 @@ end
 -- Spawn trains if able, if unable then store train variables from server and render blips for existing trains
 RegisterNetEvent("vorp:SelectedCharacter", function()
 	TriggerServerEvent("BGS_Trains:server:CanSpawnTrain")
-	Wait(100)
+	Wait(3000)
 	if canSpawn then
+		print("can spawn")
 		if Config.UseEastTrain then
 			if Config.UseChristmasTrainEast then
 				TrainCreateVehicle(christmasTrainHash, Config.EastTrainSpawnLocation, "east")
@@ -307,30 +315,43 @@ RegisterNetEvent("vorp:SelectedCharacter", function()
 		end
 		Wait(1000)
 		TriggerServerEvent("BGS_Trains:server:GetTrainsFromServer")
-		Wait(1000)
-		RenderTrainBlips()
-		if Config.UseChristmasTrainEast or Config.UseChristmasTrainWest then
-			HandleChristmasTrains()
-		end
-		if Config.UseFancyTrainEast then
-			HandleFancyTrain(eastTrain)
-		end
-		if Config.UseFancyTrainWest then
-			HandleFancyTrain(westTrain)
-		end
 	else
+		print("cannot spawn")
 		TriggerServerEvent("BGS_Trains:server:GetTrainsFromServer")
+	end
+end)
+
+RegisterNetEvent("RSGCore:Client:OnPlayerLoaded", function()
+	TriggerServerEvent("BGS_Trains:server:CanSpawnTrain")
+	Wait(3000)
+	if canSpawn then
+		print("can spawn")
+		if Config.UseEastTrain then
+			if Config.UseChristmasTrainEast then
+				TrainCreateVehicle(christmasTrainHash, Config.EastTrainSpawnLocation, "east")
+			elseif Config.UseFancyTrainEast then
+				TrainCreateVehicle(0xCD2C7CA1, Config.EastTrainSpawnLocation, "east")
+			else
+				TrainCreateVehicle(Config.EastTrain, Config.EastTrainSpawnLocation, "east")
+			end
+		end
+		if Config.UseWestTrain then
+			if Config.UseChristmasTrainWest then
+				TrainCreateVehicle(christmasTrainHash, Config.WestTrainSpawnLocation, "west")
+			elseif Config.UseFancyTrainWest then
+				TrainCreateVehicle(0xCD2C7CA1, Config.WestTrainSpawnLocation, "west")
+			else
+				TrainCreateVehicle(Config.WestTrain, Config.WestTrainSpawnLocation, "west")
+			end
+		end
+		if Config.UseTram then
+			TrainCreateVehicle(Config.Trolley, Config.TramSpawnLocation)
+		end
 		Wait(1000)
-		RenderTrainBlips()
-		if Config.UseChristmasTrainEast or Config.UseChristmasTrainWest then
-			HandleChristmasTrains()
-		end
-		if Config.UseFancyTrainEast then
-			HandleFancyTrain(eastTrain)
-		end
-		if Config.UseFancyTrainWest then
-			HandleFancyTrain(westTrain)
-		end
+		TriggerServerEvent("BGS_Trains:server:GetTrainsFromServer")
+	else
+		print("cannot spawn")
+		TriggerServerEvent("BGS_Trains:server:GetTrainsFromServer")
 	end
 end)
 
@@ -341,20 +362,54 @@ end)
 
 -- Get net indexes for train values from server, convert and store
 RegisterNetEvent("BGS_Trains:client:GetTrainsFromServer", function (eastNet, westNet, tramNet, eastConductorNet, westConductorNet, tramConductorNet)
-	eastTrain = NetToVeh(eastNet)
-	eastConductor = NetToPed(eastConductorNet)
-	westTrain = NetToVeh(westNet)
-	westConductor = NetToPed(westConductorNet)
-	tram = NetToVeh(tramNet)
-	tramConductor = NetToPed(tramConductorNet)
-	if eastConductor then
-		ProtectTrainDriver(eastConductor)
+	local spawnedWest = true
+	local spawnedEast = true
+	local spawnedTram = true
+	if Config.UseEastTrain then
+		spawnedEast = false
+		if eastNet then
+			eastTrain = NetworkGetEntityFromNetworkId(eastNet)
+			eastConductor = NetworkGetEntityFromNetworkId(eastConductorNet)
+			ProtectTrainDriver(eastConductor)
+			spawnedEast = true
+		end
 	end
-	if westConductor then
-		ProtectTrainDriver(eastConductor)
+	if Config.UseWestTrain then
+		spawnedWest = false
+		if westNet then
+			westTrain = NetworkGetEntityFromNetworkId(westNet)
+			westConductor = NetworkGetEntityFromNetworkId(westConductorNet)
+			ProtectTrainDriver(westConductor)
+			spawnedWest = true
+		end
 	end
-	if tramConductor then
-		ProtectTrainDriver(tramConductor)
+	if Config.UseTram then
+		spawnedTram = false
+		if tramNet then
+			tram = NetworkGetEntityFromNetworkId(tramNet)
+			tramConductor = NetworkGetEntityFromNetworkId(tramConductorNet)
+			ProtectTrainDriver(tramConductor)
+			spawnedTram = true
+		end
+	end
+
+	if spawnedWest and spawnedEast and spawnedTram then
+		RenderTrainBlips()
+		if Config.UseChristmasTrainEast or Config.UseChristmasTrainWest then
+			HandleChristmasTrains()
+		end
+		if Config.UseFancyTrainEast then
+			HandleFancyTrain(eastTrain)
+		end
+		if Config.UseFancyTrainWest then
+			HandleFancyTrain(westTrain)
+		end
+		return
+	else
+		print("did not find trains")
+		Wait(1000)
+		TriggerServerEvent("BGS_Trains:server:GetTrainsFromServer")
+		return
 	end
 end)
 

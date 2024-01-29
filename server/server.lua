@@ -10,17 +10,20 @@ local tram
 local tramConductor
 
 RegisterServerEvent("BGS_Trains:server:CanSpawnTrain", function ()
-	local _source = source
+	local src = source
 	local canSpawn = false
 
-	table.insert(players, _source)
+	table.insert(players, src)
 
 	if not spawned then
 		spawned = true
 		canSpawn = true
 	end
 
-	TriggerClientEvent("BGS_Trains:client:CanSpawnTrain", _source, canSpawn)
+	print("spawned:", spawned)
+	print("canSpawn:", canSpawn)
+
+	TriggerClientEvent("BGS_Trains:client:CanSpawnTrain", src, canSpawn)
 end)
 
 RegisterServerEvent("BGS_Trains:server:StoreNetIndex", function (trainNetIndex, driverNetIndex, trainArea)
@@ -51,6 +54,7 @@ AddEventHandler("playerDropped", function(reason)
 	end
 	if #players < 1 then
 		spawned = false
+		eastTrain, eastConductor, westTrain, westConductor, tram, tramConductor = nil, nil, nil, nil, nil, nil
 	end
 end)
 
