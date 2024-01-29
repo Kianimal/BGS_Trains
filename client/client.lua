@@ -179,8 +179,6 @@ end
 -- Create train and tram vehicles, network and store server side
 local function TrainCreateVehicle(trainModel, location, trainArea)
 
-	print("train creation thread has run")
-
 	CreateThread(function ()
 		while true do
 			Wait(1000)
@@ -222,8 +220,6 @@ local function TrainCreateVehicle(trainModel, location, trainArea)
 			NetworkRegisterEntityAsNetworked(trainDriverHandle)
 			SetNetworkIdExistsOnAllMachines(PedToNet(trainDriverHandle), true)
 
-			print(trainVeh)
-
 			if DoesEntityExist(trainVeh) then
 				if NetworkDoesNetworkIdExist(NetworkGetNetworkIdFromEntity(trainVeh)) then
 					TriggerServerEvent("BGS_Trains:server:StoreNetIndex", NetworkGetNetworkIdFromEntity(trainVeh), NetworkGetNetworkIdFromEntity(trainDriverHandle), trainArea)
@@ -258,7 +254,6 @@ RegisterNetEvent("vorp:SelectedCharacter", function()
 	TriggerServerEvent("BGS_Trains:server:CanSpawnTrain")
 	Wait(3000)
 	if canSpawn then
-		print("can spawn")
 		if Config.UseEastTrain then
 			if Config.UseChristmasTrainEast then
 				TrainCreateVehicle(christmasTrainHash, Config.EastTrainSpawnLocation, "east")
@@ -283,7 +278,6 @@ RegisterNetEvent("vorp:SelectedCharacter", function()
 		Wait(1000)
 		TriggerServerEvent("BGS_Trains:server:GetTrainsFromServer")
 	else
-		print("cannot spawn")
 		TriggerServerEvent("BGS_Trains:server:GetTrainsFromServer")
 	end
 end)
@@ -292,7 +286,6 @@ RegisterNetEvent("RSGCore:Client:OnPlayerLoaded", function()
 	TriggerServerEvent("BGS_Trains:server:CanSpawnTrain")
 	Wait(3000)
 	if canSpawn then
-		print("can spawn")
 		if Config.UseEastTrain then
 			if Config.UseChristmasTrainEast then
 				TrainCreateVehicle(christmasTrainHash, Config.EastTrainSpawnLocation, "east")
@@ -317,7 +310,6 @@ RegisterNetEvent("RSGCore:Client:OnPlayerLoaded", function()
 		Wait(1000)
 		TriggerServerEvent("BGS_Trains:server:GetTrainsFromServer")
 	else
-		print("cannot spawn")
 		TriggerServerEvent("BGS_Trains:server:GetTrainsFromServer")
 	end
 end)
@@ -373,7 +365,6 @@ RegisterNetEvent("BGS_Trains:client:GetTrainsFromServer", function (eastNet, wes
 		end
 		return
 	else
-		print("did not find trains")
 		Wait(1000)
 		TriggerServerEvent("BGS_Trains:server:GetTrainsFromServer")
 		return

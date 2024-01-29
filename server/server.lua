@@ -20,9 +20,6 @@ RegisterServerEvent("BGS_Trains:server:CanSpawnTrain", function ()
 		canSpawn = true
 	end
 
-	print("spawned:", spawned)
-	print("canSpawn:", canSpawn)
-
 	TriggerClientEvent("BGS_Trains:client:CanSpawnTrain", src, canSpawn)
 end)
 
