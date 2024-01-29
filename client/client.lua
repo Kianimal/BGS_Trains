@@ -101,35 +101,6 @@ local function HandleChristmasTrains()
 	end)
 end
 
-local function SpawnBartender(carriage)
-	local coords = GetEntityCoords(carriage)
-
-	local bartender = CreatePed(518339740, coords.x+0.85, coords.y+1.25, coords.z+0.5, GetEntityHeading(carriage), true, false, false, false)
-	SetPedRandomComponentVariation(bartender, 0)
-
-	SetEntityInvincible(bartender, true)
-	SetBlockingOfNonTemporaryEvents(bartender, true)
-	SetEntityAsMissionEntity(bartender, true, true)
-	SetEntityCanBeDamaged(bartender, false)
-	NetworkRegisterEntityAsNetworked(bartender)
-
-	Citizen.InvokeNative(0x524B54361229154F, bartender, joaat("WORLD_HUMAN_BARTENDER_CLEAN_GLASS"), 
-		-1, true, joaat("WORLD_HUMAN_BARTENDER_CLEAN_GLASS_MALE_B"), -1.0, 0)
-
-	if DoesEntityExist(bartender) then
-		AttachEntityToEntity(bartender, carriage, 14, 0, 0.5, 0.40, 0, 0, 0, false, false, false, true, 0, true)
-		CreateThread(function ()
-			while true do
-				Wait(1000)
-				AttachEntityToEntity(bartender, carriage, 14, 0, 0.5, 0.40, 0, 0, 0, false, false, false, true, 0, true)
-			end
-		end)
-		return true
-	end
-
-	return false
-end
-
 local function ReplaceCabinInterior(carriage, interior)
 	local propset = Citizen.InvokeNative(0xCFC0BD09BB1B73FF, carriage)
 	local propsetHash = Citizen.InvokeNative(0xA6A9712955F53D9C, propset)
@@ -163,7 +134,6 @@ end
 local function HandleFancyTrain(train)
 	local barCreated = false
 	local sleepersCreated = false
-	local bartenderSpawned = false
 	CreateThread(function ()
 
 		while true do
@@ -172,13 +142,10 @@ local function HandleFancyTrain(train)
 			local carriage2 = Citizen.InvokeNative(0xD0FB093A4CDB932C, train, 4)
 			local carriage3 = Citizen.InvokeNative(0xD0FB093A4CDB932C, train, 6)
 			local carriage4 = Citizen.InvokeNative(0xD0FB093A4CDB932C, train, 5)
-			if #(GetEntityCoords(PlayerPedId()) - GetEntityCoords(carriage4)) < 150 and (not barCreated or not sleepersCreated or not bartenderSpawned) then
+			if #(GetEntityCoords(PlayerPedId()) - GetEntityCoords(carriage4)) < 150 and (not barCreated or not sleepersCreated) then
 				if not barCreated or not sleepersCreated then
 					if not barCreated then
 						barCreated = ReplaceCabinInterior(carriage, -1747631964)
-					end
-					if not bartenderSpawned then
-						bartenderSpawned = SpawnBartender(carriage)
 					end
 					if not sleepersCreated then
 						sleepersCreated = ReplaceCabinInterior(carriage2, -317994478)
