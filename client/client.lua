@@ -246,7 +246,9 @@ local function TrainCreateVehicle(trainModel, location, trainArea)
 	NetworkRegisterEntityAsNetworked(trainDriverHandle)
 	SetNetworkIdExistsOnAllMachines(PedToNet(trainDriverHandle), true)
 
-	TriggerServerEvent("BGS_Trains:server:StoreNetIndex", VehToNet(trainVeh), PedToNet(trainDriverHandle), trainArea)
+	if NetworkDoesNetworkIdExist(VehToNet(trainVeh)) then
+		TriggerServerEvent("BGS_Trains:server:StoreNetIndex", VehToNet(trainVeh), PedToNet(trainDriverHandle), trainArea)
+	end
 
 end
 
