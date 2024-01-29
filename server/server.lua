@@ -51,6 +51,12 @@ AddEventHandler("playerDropped", function(reason)
 	end
 	if #players < 1 then
 		spawned = false
+		DeleteEntity(NetworkGetEntityFromNetworkId(eastTrain))
+		DeleteEntity(NetworkGetEntityFromNetworkId(eastConductor))
+		DeleteEntity(NetworkGetEntityFromNetworkId(westTrain))
+		DeleteEntity(NetworkGetEntityFromNetworkId(westConductor))
+		DeleteEntity(NetworkGetEntityFromNetworkId(tram))
+		DeleteEntity(NetworkGetEntityFromNetworkId(tramConductor))
 		eastTrain, eastConductor, westTrain, westConductor, tram, tramConductor = nil, nil, nil, nil, nil, nil
 	end
 end)
@@ -58,6 +64,12 @@ end)
 AddEventHandler('onResourceStop', function(resourceName)
 	if GetCurrentResourceName() == resourceName then
         spawned = false
+		DeleteEntity(NetworkGetEntityFromNetworkId(eastTrain))
+		DeleteEntity(NetworkGetEntityFromNetworkId(eastConductor))
+		DeleteEntity(NetworkGetEntityFromNetworkId(westTrain))
+		DeleteEntity(NetworkGetEntityFromNetworkId(westConductor))
+		DeleteEntity(NetworkGetEntityFromNetworkId(tram))
+		DeleteEntity(NetworkGetEntityFromNetworkId(tramConductor))
 		players = {}
 	end
 end)
