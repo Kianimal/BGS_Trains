@@ -177,7 +177,7 @@ local function RenderTrainBlips()
 end
 
 -- Create train and tram vehicles, network and store server side
-local function TrainCreateVehicle(trainModel, location, trainArea)
+local function TrainCreateVehicle(trainModel, location, trainArea, direction)
 
 	CreateThread(function ()
 		while true do
@@ -202,7 +202,7 @@ local function TrainCreateVehicle(trainModel, location, trainArea)
 				Citizen.InvokeNative(0x4182C037AA1F0091, trainVeh, true) 					-- Set train stops for stations
 				Citizen.InvokeNative(0x8EC47DD4300BF063, trainVeh, 0.0) 					-- Set train offset for station
 			else
-				trainVeh = Citizen.InvokeNative(0xC239DBD9A57D2A71, trainModel, location, true, false, true, true)
+				trainVeh = Citizen.InvokeNative(0xC239DBD9A57D2A71, trainModel, location, direction, false, true, true)
 				SetTrainSpeed(trainVeh, 2.0)
 				Citizen.InvokeNative(0x4182C037AA1F0091, trainVeh, true) 					-- Set train stops for stations
 				Citizen.InvokeNative(0x8EC47DD4300BF063, trainVeh, 0.0) 					-- Set train offset for station
@@ -249,27 +249,26 @@ local function ProtectTrainDriver(trainDriverHandle)
 	end
 end
 
--- Spawn trains if able, if unable then store train variables from server and render blips for existing trains
-RegisterNetEvent("vorp:SelectedCharacter", function()
+local function SpawnTrains()
 	TriggerServerEvent("BGS_Trains:server:CanSpawnTrain")
 	Wait(3000)
 	if canSpawn then
 		if Config.UseEastTrain then
 			if Config.UseChristmasTrainEast then
-				TrainCreateVehicle(christmasTrainHash, Config.EastTrainSpawnLocation, "east")
+				TrainCreateVehicle(christmasTrainHash, Config.EastTrainSpawnLocation, "east", Config.EastTrainDirection)
 			elseif Config.UseFancyTrainEast then
-				TrainCreateVehicle(0xCD2C7CA1, Config.EastTrainSpawnLocation, "east")
+				TrainCreateVehicle(0xCD2C7CA1, Config.EastTrainSpawnLocation, "east", Config.EastTrainDirection)
 			else
-				TrainCreateVehicle(Config.EastTrain, Config.EastTrainSpawnLocation, "east")
+				TrainCreateVehicle(Config.EastTrain, Config.EastTrainSpawnLocation, "east", Config.EastTrainDirection)
 			end
 		end
 		if Config.UseWestTrain then
 			if Config.UseChristmasTrainWest then
-				TrainCreateVehicle(christmasTrainHash, Config.WestTrainSpawnLocation, "west")
+				TrainCreateVehicle(christmasTrainHash, Config.WestTrainSpawnLocation, "west", Config.WestTrainDirection)
 			elseif Config.UseFancyTrainWest then
-				TrainCreateVehicle(0xCD2C7CA1, Config.WestTrainSpawnLocation, "west")
+				TrainCreateVehicle(0xCD2C7CA1, Config.WestTrainSpawnLocation, "west", Config.WestTrainDirection)
 			else
-				TrainCreateVehicle(Config.WestTrain, Config.WestTrainSpawnLocation, "west")
+				TrainCreateVehicle(Config.WestTrain, Config.WestTrainSpawnLocation, "west", Config.WestTrainDirection)
 			end
 		end
 		if Config.UseTram then
@@ -280,38 +279,15 @@ RegisterNetEvent("vorp:SelectedCharacter", function()
 	else
 		TriggerServerEvent("BGS_Trains:server:GetTrainsFromServer")
 	end
+end
+
+-- Spawn trains if able, if unable then store train variables from server and render blips for existing trains
+RegisterNetEvent("vorp:SelectedCharacter", function()
+	SpawnTrains()
 end)
 
 RegisterNetEvent("RSGCore:Client:OnPlayerLoaded", function()
-	TriggerServerEvent("BGS_Trains:server:CanSpawnTrain")
-	Wait(3000)
-	if canSpawn then
-		if Config.UseEastTrain then
-			if Config.UseChristmasTrainEast then
-				TrainCreateVehicle(christmasTrainHash, Config.EastTrainSpawnLocation, "east")
-			elseif Config.UseFancyTrainEast then
-				TrainCreateVehicle(0xCD2C7CA1, Config.EastTrainSpawnLocation, "east")
-			else
-				TrainCreateVehicle(Config.EastTrain, Config.EastTrainSpawnLocation, "east")
-			end
-		end
-		if Config.UseWestTrain then
-			if Config.UseChristmasTrainWest then
-				TrainCreateVehicle(christmasTrainHash, Config.WestTrainSpawnLocation, "west")
-			elseif Config.UseFancyTrainWest then
-				TrainCreateVehicle(0xCD2C7CA1, Config.WestTrainSpawnLocation, "west")
-			else
-				TrainCreateVehicle(Config.WestTrain, Config.WestTrainSpawnLocation, "west")
-			end
-		end
-		if Config.UseTram then
-			TrainCreateVehicle(Config.Trolley, Config.TramSpawnLocation)
-		end
-		Wait(1000)
-		TriggerServerEvent("BGS_Trains:server:GetTrainsFromServer")
-	else
-		TriggerServerEvent("BGS_Trains:server:GetTrainsFromServer")
-	end
+	SpawnTrains()
 end)
 
 -- Determine if player can spawn first trains or not

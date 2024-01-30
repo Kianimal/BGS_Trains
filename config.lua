@@ -16,6 +16,9 @@ Config.UseChristmasTrainWest = false
 Config.UseFancyTrainEast = true
 Config.UseFancyTrainWest = false
 
+Config.EastTrainDirection = true    -- set to false to have it go the other way
+Config.WestTrainDirection = true    -- set to false to have it go the other way
+
 Config.TrainBlipNameEast = "BGS East Line"
 Config.TrainBlipNameWest = "BGS West Line"
 
