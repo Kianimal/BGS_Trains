@@ -20,6 +20,8 @@ RegisterServerEvent("BGS_Trains:server:CanSpawnTrain", function ()
 		canSpawn = true
 	end
 
+	Wait(1000)
+
 	TriggerClientEvent("BGS_Trains:client:CanSpawnTrain", src, canSpawn)
 end)
 

@@ -367,6 +367,10 @@ RegisterNetEvent("BGS_Trains:client:GetTrainsFromServer", function (eastNet, wes
 	else
 		Wait(1000)
 		TriggerServerEvent("BGS_Trains:server:GetTrainsFromServer")
+		Wait(1000)
+		ProtectTrainDriver(eastConductor)
+		ProtectTrainDriver(westConductor)
+		ProtectTrainDriver(tramConductor)
 		return
 	end
 end)
