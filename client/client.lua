@@ -238,14 +238,16 @@ local function ProtectTrainDriver(trainDriverHandle)
 		SetBlockingOfNonTemporaryEvents(trainDriverHandle, true)
 		SetEntityAsMissionEntity(trainDriverHandle, true, true)
 		SetEntityCanBeDamaged(trainDriverHandle, false)
-		CreateThread(function()
-			while true and trainDriverHandle ~= tramConductor do
-				Wait(1)
-				if #(GetEntityCoords(trainDriverHandle) - GetEntityCoords(PlayerPedId())) < 12.5 then
-					Citizen.InvokeNative(0xFC094EF26DD153FA, 12)
+		if trainDriverHandle ~= tramConductor then
+			CreateThread(function()
+				while true do
+					Wait(1)
+					if #(GetEntityCoords(trainDriverHandle) - GetEntityCoords(PlayerPedId())) < 12.5 then
+						Citizen.InvokeNative(0xFC094EF26DD153FA, 12)
+					end
 				end
-			end
-		end)
+			end)
+		end
 	end
 end
 
