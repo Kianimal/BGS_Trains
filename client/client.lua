@@ -159,22 +159,21 @@ local function HandleFancyTrain(train)
 end
 
 -- Render train blips after values are retrieved from server
-local function RenderTrainBlips()
-	local TrainBlip1
-	local TrainBlip2
-	if westTrain then
-		TrainBlip1 = Citizen.InvokeNative(0x23F74C2FDA6E7C61, 1664425300, westTrain)
-		SetBlipSprite(TrainBlip1, -250506368)
-		Citizen.InvokeNative(0x9CB1A1623062F402, TrainBlip1, Config.TrainBlipNameWest)
-		SetBlipScale(TrainBlip1, 1.0)
+RegisterNetEvent("BGS_Trains:client:RenderTrainBlip", function (train)
+	local TrainBlip
+	if train then
+		if IsThisModelATrain(GetEntityModel(train)) then
+			TrainBlip = Citizen.InvokeNative(0x23F74C2FDA6E7C61, 1664425300, train)
+			SetBlipSprite(TrainBlip, -250506368)
+			if train == eastTrain then
+				Citizen.InvokeNative(0x9CB1A1623062F402, TrainBlip, Config.TrainBlipNameEast)
+			elseif train == westTrain then
+				Citizen.InvokeNative(0x9CB1A1623062F402, TrainBlip, Config.TrainBlipNameWest)
+			end
+			SetBlipScale(TrainBlip, 1.0)
+		end
 	end
-	if eastTrain then
-		TrainBlip2 = Citizen.InvokeNative(0x23F74C2FDA6E7C61, 1664425300, eastTrain)
-		SetBlipSprite(TrainBlip2, -250506368)
-		Citizen.InvokeNative(0x9CB1A1623062F402, TrainBlip2, Config.TrainBlipNameEast)
-		SetBlipScale(TrainBlip2, 1.0)
-	end
-end
+end)
 
 -- Create train and tram vehicles, network and store server side
 local function TrainCreateVehicle(trainModel, location, trainArea, direction)
@@ -215,13 +214,12 @@ local function TrainCreateVehicle(trainModel, location, trainArea, direction)
 				Citizen.Wait(1)
 			end
 
-			NetworkRegisterEntityAsNetworked(trainVeh)
-			SetNetworkIdExistsOnAllMachines(VehToNet(trainVeh), true)
-			NetworkRegisterEntityAsNetworked(trainDriverHandle)
-			SetNetworkIdExistsOnAllMachines(PedToNet(trainDriverHandle), true)
-
-			if DoesEntityExist(trainVeh) then
-				if NetworkDoesNetworkIdExist(NetworkGetNetworkIdFromEntity(trainVeh)) then
+			if DoesEntityExist(trainVeh) and DoesEntityExist(trainDriverHandle) then
+				NetworkRegisterEntityAsNetworked(trainVeh)
+				NetworkRegisterEntityAsNetworked(trainDriverHandle)
+				if NetworkDoesNetworkIdExist(NetworkGetNetworkIdFromEntity(trainVeh)) and NetworkDoesNetworkIdExist(NetworkGetNetworkIdFromEntity(trainDriverHandle)) then
+					SetNetworkIdExistsOnAllMachines(NetworkGetNetworkIdFromEntity(trainVeh), true)
+					SetNetworkIdExistsOnAllMachines(NetworkGetNetworkIdFromEntity(trainDriverHandle), true)
 					TriggerServerEvent("BGS_Trains:server:StoreNetIndex", NetworkGetNetworkIdFromEntity(trainVeh), NetworkGetNetworkIdFromEntity(trainDriverHandle), trainArea)
 					return
 				end
@@ -238,16 +236,6 @@ local function ProtectTrainDriver(trainDriverHandle)
 		SetBlockingOfNonTemporaryEvents(trainDriverHandle, true)
 		SetEntityAsMissionEntity(trainDriverHandle, true, true)
 		SetEntityCanBeDamaged(trainDriverHandle, false)
-		if trainDriverHandle ~= tramConductor then
-			CreateThread(function()
-				while true do
-					Wait(1)
-					if #(GetEntityCoords(trainDriverHandle) - GetEntityCoords(PlayerPedId())) < 12.5 then
-						Citizen.InvokeNative(0xFC094EF26DD153FA, 12)
-					end
-				end
-			end)
-		end
 	end
 end
 
@@ -276,9 +264,10 @@ local function SpawnTrains()
 		if Config.UseTram then
 			TrainCreateVehicle(Config.Trolley, Config.TramSpawnLocation)
 		end
-		Wait(1000)
-		TriggerServerEvent("BGS_Trains:server:GetTrainsFromServer")
+		Wait(3000)
+		TriggerServerEvent("BGS_Trains:server:AllPlayersGetTrainsFromServer")
 	else
+		Wait(3000)
 		TriggerServerEvent("BGS_Trains:server:GetTrainsFromServer")
 	end
 end
@@ -309,6 +298,7 @@ RegisterNetEvent("BGS_Trains:client:GetTrainsFromServer", function (eastNet, wes
 			eastConductor = NetworkGetEntityFromNetworkId(eastConductorNet)
 			ProtectTrainDriver(eastConductor)
 			spawnedEast = true
+			TriggerEvent("BGS_Trains:client:RenderTrainBlip", eastTrain)
 		end
 	end
 	if Config.UseWestTrain then
@@ -318,6 +308,7 @@ RegisterNetEvent("BGS_Trains:client:GetTrainsFromServer", function (eastNet, wes
 			westConductor = NetworkGetEntityFromNetworkId(westConductorNet)
 			ProtectTrainDriver(westConductor)
 			spawnedWest = true
+			TriggerEvent("BGS_Trains:client:RenderTrainBlip", westTrain)
 		end
 	end
 	if Config.UseTram then
@@ -331,7 +322,6 @@ RegisterNetEvent("BGS_Trains:client:GetTrainsFromServer", function (eastNet, wes
 	end
 
 	if spawnedWest and spawnedEast and spawnedTram then
-		RenderTrainBlips()
 		if Config.UseChristmasTrainEast or Config.UseChristmasTrainWest then
 			HandleChristmasTrains()
 		end
@@ -346,6 +336,34 @@ RegisterNetEvent("BGS_Trains:client:GetTrainsFromServer", function (eastNet, wes
 		Wait(1000)
 		TriggerServerEvent("BGS_Trains:server:GetTrainsFromServer")
 		return
+	end
+end)
+
+RegisterNetEvent("BGS_Trains:client:ResetTrain", function (trainArea)
+	if trainArea == "east" then
+		if Config.UseChristmasTrainEast then
+			TrainCreateVehicle(christmasTrainHash, Config.EastTrainSpawnLocation, "east", Config.EastTrainDirection)
+		elseif Config.UseFancyTrainEast then
+			TrainCreateVehicle(0xCD2C7CA1, Config.EastTrainSpawnLocation, "east", Config.EastTrainDirection)
+		else
+			TrainCreateVehicle(Config.EastTrain, Config.EastTrainSpawnLocation, "east", Config.EastTrainDirection)
+		end
+		Wait(2500)
+		TriggerServerEvent("BGS_Trains:server:AllPlayersGetTrainsFromServer")
+		Wait(2500)
+		TriggerServerEvent("BGS_Trains:server:ResetTrainBlip", eastTrain)
+	elseif trainArea == "west" then
+		if Config.UseChristmasTrainWest then
+			TrainCreateVehicle(christmasTrainHash, Config.WestTrainSpawnLocation, "west", Config.WestTrainDirection)
+		elseif Config.UseFancyTrainWest then
+			TrainCreateVehicle(0xCD2C7CA1, Config.WestTrainSpawnLocation, "west", Config.WestTrainDirection)
+		else
+			TrainCreateVehicle(Config.WestTrain, Config.WestTrainSpawnLocation, "west", Config.WestTrainDirection)
+		end
+		Wait(2500)
+		TriggerServerEvent("BGS_Trains:server:AllPlayersGetTrainsFromServer")
+		Wait(2500)
+		TriggerServerEvent("BGS_Trains:server:ResetTrainBlip", westTrain)
 	end
 end)
 
@@ -453,6 +471,36 @@ CreateThread(function()
 						Citizen.InvokeNative(0x3ABFA128F5BF5A70, Config.RouteOneTramSwitches[i].trainTrack, Config.RouteOneTramSwitches[i].junctionIndex, Config.RouteOneTramSwitches[i].enabled)
 					end
 				end
+			end
+		end
+	end
+end)
+
+-- Protect west train driver from being knocked out of train
+CreateThread(function()
+	if not Config.UseWestTrain then
+		return
+	end
+	while true do
+		Wait(0)
+		if westConductor and Config.ProtectTrainDrivers then
+			if #(GetEntityCoords(westConductor) - GetEntityCoords(PlayerPedId())) < 20.0 then
+				Citizen.InvokeNative(0xFC094EF26DD153FA, 12)
+			end
+		end
+	end
+end)
+
+-- Protect east train driver from being knocked out of train
+CreateThread(function()
+	if not Config.UseEastTrain then
+		return
+	end
+	while true do
+		Wait(0)
+		if eastConductor and Config.ProtectTrainDrivers then
+			if #(GetEntityCoords(eastConductor) - GetEntityCoords(PlayerPedId())) < 20.0 then
+				Citizen.InvokeNative(0xFC094EF26DD153FA, 12)
 			end
 		end
 	end

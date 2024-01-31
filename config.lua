@@ -1,33 +1,56 @@
+--       ___          ___          ___     
+--      /\  \        /\  \        /\  \    
+--     /::\  \      /::\  \      /::\  \   
+--    /:/\:\  \    /:/\:\  \    /:/\ \  \  
+--   /::\~\:\__\  /:/  \:\  \  _\:\~\ \  \ 
+--  /:/\:\ \:|__|/:/__/_\:\__\/\ \:\ \ \__\
+--  \:\~\:\/:/  /\:\  /\ \/__/\:\ \:\ \/__/
+--   \:\ \::/  /  \:\ \:\__\   \:\ \:\__\  
+--    \:\/:/  /    \:\/:/  /    \:\/:/  /  
+--     \::/__/      \::/  /      \::/  /   
+--      ‾‾           \/__/        \/__/    
+
+-- BGS Trains
+-- Author: Snapopotamus
+-- © 2024
+-- An ambient train system for RedM servers.
+-- Compatible with RSGCore and VORPCore.
+
+---------------------------------------------------------------------------------------------
+
 Config = {}
 
-Config.TrainMaxSpeed = 10.0
+Config.TrainMaxSpeed = 10.0 -- Train max speed (fot used for trams)
 
-Config.EastTrainSpawnLocation = vec3(2590.34, -1477.24, 45.86)
+Config.EastTrainSpawnLocation = vec3(2590.34, -1477.24, 45.86)   -- Initial train spawn locations
 Config.WestTrainSpawnLocation = vec3(-3763.37, -2782.54, -14.43)
 Config.TramSpawnLocation =      vec3(2608.38, -1203.12, 53.16)
 
-Config.UseEastTrain = true
+Config.UseEastTrain = true           -- Choose to use or not use each of the trains
 Config.UseWestTrain = true
 Config.UseTram = true
 
-Config.UseChristmasTrainEast = false
+Config.UseChristmasTrainEast = false -- Spawns a christmas train with decorations
 Config.UseChristmasTrainWest = false
 
-Config.UseFancyTrainEast = true
+Config.UseFancyTrainEast = true      -- Spawns a fancy train with fancy cabins (forces train hash)
 Config.UseFancyTrainWest = false
 
-Config.EastTrainDirection = true    -- set to false to have it go the other way
-Config.WestTrainDirection = true    -- set to false to have it go the other way
+Config.EastTrainDirection = false    -- set to true to have it go the other way
+Config.WestTrainDirection = false
 
 Config.TrainBlipNameEast = "BGS East Line"
 Config.TrainBlipNameWest = "BGS West Line"
 
-Config.EastTrain = 0x10461E19 -- List can be found at https://alloc8or.re/rdr3/doc/enums/eTrainConfig.txt
-Config.WestTrain = 0x10461E19
-Config.Trolley = 0xBF69518F   --trolley_config = 0xBF69518F
-                              --trolley_config2 = 0x09B679D6
+Config.EastTrain = 0xCD2C7CA1   -- List can be found at https://alloc8or.re/rdr3/doc/enums/eTrainConfig.txt
+Config.WestTrain = 0xCD2C7CA1
+Config.Trolley = 0xBF69518F     --trolley_config = 0xBF69518F
+                                --trolley_config2 = 0x09B679D6
 
-Config.StationWaitTime = 30
+Config.StationWaitTime = 30     -- time that trains wait at a station (in seconds)
+Config.TrainDespawnTimer = 1   -- time to despawn stuck/abandoned trains (in minutes)
+
+Config.ProtectTrainDrivers = false -- SHOULD protect the train driver from being kicked out if set to true (let me know if it doesn't)
 
 Config.RouteOneTramSwitches = {
 
