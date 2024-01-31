@@ -195,14 +195,14 @@ local function TrainCreateVehicle(trainModel, location, trainArea, direction)
 			local trainVeh
 
 			if trainModel ~= Config.Trolley then
-				trainVeh = Citizen.InvokeNative(0xC239DBD9A57D2A71, trainModel, location, false, false, true, true)
+				trainVeh = Citizen.InvokeNative(0xC239DBD9A57D2A71, trainModel, location, direction, false, true, true)
 				SetTrainSpeed(trainVeh, Config.TrainMaxSpeed)
 				SetTrainCruiseSpeed(trainVeh, Config.TrainMaxSpeed)
 				Citizen.InvokeNative(0x9F29999DFDF2AEB8, trainVeh, Config.TrainMaxSpeed)
 				Citizen.InvokeNative(0x4182C037AA1F0091, trainVeh, true) 					-- Set train stops for stations
 				Citizen.InvokeNative(0x8EC47DD4300BF063, trainVeh, 0.0) 					-- Set train offset for station
 			else
-				trainVeh = Citizen.InvokeNative(0xC239DBD9A57D2A71, trainModel, location, direction, false, true, true)
+				trainVeh = Citizen.InvokeNative(0xC239DBD9A57D2A71, trainModel, location, true, false, true, true)
 				SetTrainSpeed(trainVeh, 2.0)
 				Citizen.InvokeNative(0x4182C037AA1F0091, trainVeh, true) 					-- Set train stops for stations
 				Citizen.InvokeNative(0x8EC47DD4300BF063, trainVeh, 0.0) 					-- Set train offset for station
