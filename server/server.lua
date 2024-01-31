@@ -127,7 +127,7 @@ CreateThread(function ()
 				DeleteEntity(NetworkGetEntityFromNetworkId(eastTrain))
 				DeleteEntity(NetworkGetEntityFromNetworkId(eastConductor))
 				eastTrain, eastConductor = nil, nil
-				TriggerClientEvent("BGS_Trains:client:ResetTrain", players[1], "east")
+				TriggerClientEvent("BGS_Trains:client:ResetTrain", players[#players], "east")
 			end
 		else
 			lastCoordsEast = vec3(0,0,0)
@@ -146,7 +146,7 @@ CreateThread(function ()
 				DeleteEntity(NetworkGetEntityFromNetworkId(westTrain))
 				DeleteEntity(NetworkGetEntityFromNetworkId(westConductor))
 				westTrain, westConductor = nil, nil
-				TriggerClientEvent("BGS_Trains:client:ResetTrain", players[1], "west")
+				TriggerClientEvent("BGS_Trains:client:ResetTrain", players[#players], "west")
 			end
 		else
 			lastCoordsWest = vec3(0,0,0)
