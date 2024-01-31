@@ -241,7 +241,7 @@ end
 
 local function SpawnTrains()
 	TriggerServerEvent("BGS_Trains:server:CanSpawnTrain")
-	Wait(3000)
+	Wait(2500)
 	if canSpawn then
 		if Config.UseEastTrain then
 			if Config.UseChristmasTrainEast then
@@ -264,7 +264,7 @@ local function SpawnTrains()
 		if Config.UseTram then
 			TrainCreateVehicle(Config.Trolley, Config.TramSpawnLocation)
 		end
-		Wait(3000)
+		Wait(2500)
 		TriggerServerEvent("BGS_Trains:server:AllPlayersGetTrainsFromServer")
 	else
 		Wait(3000)
