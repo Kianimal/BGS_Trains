@@ -48,7 +48,7 @@ Config.Trolley = 0xBF69518F     --trolley_config = 0xBF69518F
                                 --trolley_config2 = 0x09B679D6
 
 Config.StationWaitTime = 30     -- time that trains wait at a station (in seconds)
-Config.TrainDespawnTimer = 1   -- time to despawn stuck/abandoned trains (in minutes)
+Config.TrainDespawnTimer = 10   -- time to despawn stuck/abandoned trains (in minutes)
 
 Config.ProtectTrainDrivers = false -- SHOULD protect the train driver from being kicked out if set to true (let me know if it doesn't)
 
