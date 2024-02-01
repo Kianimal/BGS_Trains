@@ -33,7 +33,7 @@ Config.UseTram = true
 Config.UseChristmasTrainEast = false -- Spawns a christmas train with decorations
 Config.UseChristmasTrainWest = false
 
-Config.UseFancyTrainEast = true      -- Spawns a fancy train with fancy cabins (forces train hash)
+Config.UseFancyTrainEast = false      -- Spawns a fancy train with fancy cabins (forces train hash)
 Config.UseFancyTrainWest = false
 
 Config.EastTrainDirection = false    -- set to true to have it go the other way
@@ -43,7 +43,7 @@ Config.UseTrainBlips = false
 Config.TrainBlipNameEast = "BGS East Line"
 Config.TrainBlipNameWest = "BGS West Line"
 
-Config.EastTrain = 0xCD2C7CA1   -- List can be found at https://alloc8or.re/rdr3/doc/enums/eTrainConfig.txt
+Config.EastTrain = 0x592A5CD0   -- List can be found at https://alloc8or.re/rdr3/doc/enums/eTrainConfig.txt
 Config.WestTrain = 0xCD2C7CA1
 Config.Trolley = 0xBF69518F     --trolley_config = 0xBF69518F
                                 --trolley_config2 = 0x09B679D6
@@ -52,6 +52,8 @@ Config.StationWaitTime = 30     -- time that trains wait at a station (in second
 Config.TrainDespawnTimer = 10   -- time to despawn stuck/abandoned trains (in minutes)
 
 Config.ProtectTrainDrivers = true -- SHOULD protect the train driver from being kicked out if set to true (let me know if it doesn't)
+
+Config.UseManualJunctions = true  -- Whether or not to use manual train junction track switches
 
 Config.RouteOneTramSwitches = {
 
@@ -69,6 +71,12 @@ Config.RouteOneTramSwitches = {
 
 }
 
+Config.EastJunctionSwitchObjects = {
+    { pushed = false, coords = vector3(610.6588745117188, 1664.1292724609375, 186.2771453857422),  rotation = vector3(0, 0, -65.51180267333984), trainTrack = -705539859, junctionIndex = 2, enabled = 1 },
+    { pushed = false, coords = vector3(-277.1185302734375, -316.1802673339844, 87.91668701171875), rotation = vector3(0, 0, 26.2404613494873),   trainTrack = -705539859, junctionIndex = 8, enabled = 0 },
+    { pushed = false, coords = vector3(357.8780822753906, 598.0778198242188, 114.59004974365234),  rotation = vector3(0, 0, 51.54927062988281),  trainTrack = 1499637393, junctionIndex = 4, enabled = 1 },
+}
+
 Config.EastJunctions = {
 
     { coords = vector3(-281.1323, -319.6579, 89.02458), trainTrack = -705539859,  junctionIndex = 2,  enabled = 1 },
@@ -77,7 +85,7 @@ Config.EastJunctions = {
     { coords = vector3(2464.55, -1475.74, 46.15192),    trainTrack = -760570040,  junctionIndex = 5,  enabled = 1 },
     { coords = vector3(2654.026, -1477.149, 45.75834),  trainTrack = -1242669618, junctionIndex = 2,  enabled = 1 },
     { coords = vector3(2659.79, -435.7114, 43.38848),   trainTrack = -705539859,  junctionIndex = 13, enabled = 0 },
-    { coords = vector3(610.3571, 1661.904, 187.3867),   trainTrack = -705539859,  junctionIndex = 8,  enabled = 1 },
+    { coords = vector3(610.3571, 1661.904, 187.3867),   trainTrack = -705539859,  junctionIndex = 8,  enabled = 0 },
     { coords = vector3(556.65, 1725.99, 187.7966),      trainTrack = -705539859,  junctionIndex = 7,  enabled = 1 },
     { coords = vector3(2588.54, -1482.19, 46.04693),    trainTrack = -705539859,  junctionIndex = 18, enabled = 1 },
 
@@ -85,8 +93,8 @@ Config.EastJunctions = {
 
 Config.WestJunctions = {
     { coords = vector3(-2187.18, -2517.21, 65.7),       trainTrack = -988268728,  junctionIndex = 0,  enabled = 1 },
-    { coords = vector3(-2214.62, -2519.47, 65.51),       trainTrack = -1763976500,  junctionIndex = 1,  enabled = 1 },
-    { coords = vector3(-2214.62, -2519.47, 65.51),       trainTrack = -1467515357,  junctionIndex = 0,  enabled = 1 }
+    { coords = vector3(-2214.62, -2519.47, 65.51),      trainTrack = -1763976500,  junctionIndex = 1,  enabled = 1 },
+    { coords = vector3(-2214.62, -2519.47, 65.51),      trainTrack = -1467515357,  junctionIndex = 0,  enabled = 1 }
 }
 
 -- Custom stops - simply add coords here and the trains will stop there!
