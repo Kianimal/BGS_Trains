@@ -39,6 +39,7 @@ Config.UseFancyTrainWest = false
 Config.EastTrainDirection = false    -- set to true to have it go the other way
 Config.WestTrainDirection = false
 
+Config.UseTrainBlips = false
 Config.TrainBlipNameEast = "BGS East Line"
 Config.TrainBlipNameWest = "BGS West Line"
 
@@ -50,7 +51,7 @@ Config.Trolley = 0xBF69518F     --trolley_config = 0xBF69518F
 Config.StationWaitTime = 30     -- time that trains wait at a station (in seconds)
 Config.TrainDespawnTimer = 10   -- time to despawn stuck/abandoned trains (in minutes)
 
-Config.ProtectTrainDrivers = false -- SHOULD protect the train driver from being kicked out if set to true (let me know if it doesn't)
+Config.ProtectTrainDrivers = true -- SHOULD protect the train driver from being kicked out if set to true (let me know if it doesn't)
 
 Config.RouteOneTramSwitches = {
 

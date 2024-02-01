@@ -159,20 +159,26 @@ local function HandleFancyTrain(train)
 end
 
 -- Render train blips after values are retrieved from server
-RegisterNetEvent("BGS_Trains:client:RenderTrainBlip", function (train)
-	local TrainBlip
-	if train then
-		if IsThisModelATrain(GetEntityModel(train)) then
-			TrainBlip = Citizen.InvokeNative(0x23F74C2FDA6E7C61, 1664425300, train)
-			SetBlipSprite(TrainBlip, -250506368)
-			if train == eastTrain then
-				Citizen.InvokeNative(0x9CB1A1623062F402, TrainBlip, Config.TrainBlipNameEast)
-			elseif train == westTrain then
-				Citizen.InvokeNative(0x9CB1A1623062F402, TrainBlip, Config.TrainBlipNameWest)
+local function RenderTrainBlip(train)
+	if Config.UseTrainBlips then
+		local TrainBlip
+		if train then
+			if IsThisModelATrain(GetEntityModel(train)) then
+				TrainBlip = Citizen.InvokeNative(0x23F74C2FDA6E7C61, 1664425300, train)
+				SetBlipSprite(TrainBlip, -250506368)
+				if train == eastTrain then
+					Citizen.InvokeNative(0x9CB1A1623062F402, TrainBlip, Config.TrainBlipNameEast)
+				elseif train == westTrain then
+					Citizen.InvokeNative(0x9CB1A1623062F402, TrainBlip, Config.TrainBlipNameWest)
+				end
+				SetBlipScale(TrainBlip, 1.0)
 			end
-			SetBlipScale(TrainBlip, 1.0)
 		end
 	end
+end
+
+RegisterNetEvent("BGS_Trains:client:RenderTrainBlip", function (train)
+	RenderTrainBlip(train)
 end)
 
 -- Create train and tram vehicles, network and store server side
@@ -298,7 +304,7 @@ RegisterNetEvent("BGS_Trains:client:GetTrainsFromServer", function (eastNet, wes
 			eastConductor = NetworkGetEntityFromNetworkId(eastConductorNet)
 			ProtectTrainDriver(eastConductor)
 			spawnedEast = true
-			TriggerEvent("BGS_Trains:client:RenderTrainBlip", eastTrain)
+			RenderTrainBlip(eastTrain)
 		end
 	end
 	if Config.UseWestTrain then
@@ -308,7 +314,7 @@ RegisterNetEvent("BGS_Trains:client:GetTrainsFromServer", function (eastNet, wes
 			westConductor = NetworkGetEntityFromNetworkId(westConductorNet)
 			ProtectTrainDriver(westConductor)
 			spawnedWest = true
-			TriggerEvent("BGS_Trains:client:RenderTrainBlip", westTrain)
+			RenderTrainBlip(westTrain)
 		end
 	end
 	if Config.UseTram then
