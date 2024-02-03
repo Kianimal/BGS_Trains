@@ -22,7 +22,8 @@ Config = {}
 
 Config.TrainMaxSpeed = 10.0 -- Train max speed (fot used for trams)
 
-Config.EastTrainSpawnLocation = vec3(2590.34, -1477.24, 45.86)   -- Initial train spawn locations
+-- Config.EastTrainSpawnLocation = vec3(2590.34, -1477.24, 45.86)   -- Initial train spawn locations
+Config.EastTrainSpawnLocation = vec3(-488.33, -425.00, 82.57)
 Config.WestTrainSpawnLocation = vec3(-3763.37, -2782.54, -14.43)
 Config.TramSpawnLocation =      vec3(2608.38, -1203.12, 53.16)
 
@@ -72,14 +73,14 @@ Config.RouteOneTramSwitches = {
 }
 
 Config.EastJunctionSwitchObjects = {
-    { pushed = false, coords = vector3(610.6588745117188, 1664.1292724609375, 186.2771453857422),  rotation = vector3(0, 0, -65.51180267333984), trainTrack = -705539859, junctionIndex = 2, enabled = 1 },
-    { pushed = false, coords = vector3(-277.1185302734375, -316.1802673339844, 87.91668701171875), rotation = vector3(0, 0, 26.2404613494873),   trainTrack = -705539859, junctionIndex = 8, enabled = 0 },
+    { pushed = false, coords = vector3(610.6588745117188, 1664.1292724609375, 186.2771453857422),  rotation = vector3(0, 0, -65.51180267333984), trainTrack = -705539859, junctionIndex = 8, enabled = 0 },
+    { pushed = false, coords = vector3(-277.1185302734375, -316.1802673339844, 87.91668701171875), rotation = vector3(0, 0, 26.2404613494873),   trainTrack = -705539859, junctionIndex = 2, enabled = 0 },
     { pushed = false, coords = vector3(357.8780822753906, 598.0778198242188, 114.59004974365234),  rotation = vector3(0, 0, 51.54927062988281),  trainTrack = 1499637393, junctionIndex = 4, enabled = 1 },
 }
 
 Config.EastJunctions = {
 
-    { coords = vector3(-281.1323, -319.6579, 89.02458), trainTrack = -705539859,  junctionIndex = 2,  enabled = 1 },
+    { coords = vector3(-281.1323, -319.6579, 89.02458), trainTrack = -705539859,  junctionIndex = 2,  enabled = 0 },
     { coords = vector3(357.959, 596.374, 115.6759),     trainTrack = 1499637393,  junctionIndex = 4,  enabled = 1 },
     { coords = vector3(1481.54, 648.331, 92.30682),     trainTrack = 1499637393,  junctionIndex = 2,  enabled = 1 },
     { coords = vector3(2464.55, -1475.74, 46.15192),    trainTrack = -760570040,  junctionIndex = 5,  enabled = 1 },

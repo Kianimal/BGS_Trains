@@ -9,6 +9,13 @@ local westConductor
 local tram
 local tramConductor
 
+local switchTable = {}
+local switchBackup = {}
+
+if Config.UseManualJunctions then
+	switchBackup = Config.EastJunctionSwitchObjects
+end
+
 RegisterServerEvent("BGS_Trains:server:CanSpawnTrain", function ()
 	local src = source
 	local canSpawn = false
@@ -55,6 +62,18 @@ RegisterServerEvent("BGS_Trains:server:ResetTrainBlip", function (train)
 	end
 end)
 
+RegisterServerEvent("BGS_Trains:server:RenderSwitchPrompts", function ()
+	local src = source
+	TriggerClientEvent("BGS_Trains:client:RenderAllSwitchPrompts", src, switchTable)
+end)
+
+RegisterServerEvent("BGS_Trains:server:RenderAllClientsSwitchPrompts", function (switches)
+	switchTable = switches
+	for index, player in ipairs(players) do
+		TriggerClientEvent("BGS_Trains:client:RenderAllSwitchPrompts", player, switchTable)
+	end
+end)
+
 AddEventHandler("playerDropped", function(reason)
 	local _source = source
 	for index, player in ipairs(players) do
@@ -78,6 +97,21 @@ AddEventHandler("playerDropped", function(reason)
 			DeleteEntity(NetworkGetEntityFromNetworkId(tramConductor))
 		end
 		eastTrain, eastConductor, westTrain, westConductor, tram, tramConductor = nil, nil, nil, nil, nil, nil
+		if Config.UseManualJunctions then
+			switchTable = {}
+			for index, value in ipairs(Config.EastJunctionSwitchObjects) do
+				value.enabled = switchBackup.enable
+				value.pushed = false
+				DeleteEntity(NetworkGetEntityFromNetworkId(value.switchObject))
+			end
+			for index, value in ipairs(Config.EastJunctions) do
+				for index2, value2 in ipairs(switchBackup) do
+					if value.junctionIndex == value2.junctionIndex and value.trainTrack == value2.trainTrack then
+						value.enabled = value2.enabled
+					end
+				end
+			end
+		end
 	end
 end)
 
@@ -98,6 +132,11 @@ AddEventHandler('onResourceStop', function(resourceName)
 		end
 		eastTrain, eastConductor, westTrain, westConductor, tram, tramConductor = nil, nil, nil, nil, nil, nil
 		players = {}
+		if Config.UseManualJunctions then
+			for index, value in ipairs(Config.EastJunctionSwitchObjects) do
+				DeleteEntity(NetworkGetEntityFromNetworkId(value.switchObject))
+			end
+		end
 	end
 end)
 

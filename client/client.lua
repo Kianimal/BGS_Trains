@@ -1,4 +1,5 @@
 local canSpawn = false
+local switchPromptsRendered = false
 
 local westTrain
 local westConductor
@@ -245,6 +246,32 @@ local function ProtectTrainDriver(trainDriverHandle)
 	end
 end
 
+local function SpawnSwitches()
+	local switches = {}
+	for index, value in ipairs(Config.EastJunctionSwitchObjects) do
+		if not value.spawned then
+			value.spawned = true
+			RequestModel("s_railswitch01x_cmbd")
+			while not HasModelLoaded("s_railswitch01x_cmbd") do
+				Wait(1)
+			end
+			local switchObject = CreateObject(joaat("s_railswitch01x_cmbd"), value.coords, true, true, false)
+			value.switchObject = NetworkGetNetworkIdFromEntity(switchObject)
+			SetEntityRotation(switchObject, value.rotation)
+			if value.enabled then
+				value.pushed = true
+				RequestAnimDict("script_story@trn3@ig@ig_1_pulllever")
+				while not HasAnimDictLoaded("script_story@trn3@ig@ig_1_pulllever") do
+					Wait(1)
+				end
+				PlayEntityAnim(switchObject, "leverpush_railswitch", "script_story@trn3@ig@ig_1_pulllever", 1.0, false, true,false,0.0,32768)
+			end
+			table.insert(switches, {NetworkGetNetworkIdFromEntity(switchObject), value})
+		end
+	end
+	TriggerServerEvent("BGS_Trains:server:RenderAllClientsSwitchPrompts", switches)
+end
+
 local function SpawnTrains()
 	TriggerServerEvent("BGS_Trains:server:CanSpawnTrain")
 	Wait(3000)
@@ -271,9 +298,15 @@ local function SpawnTrains()
 			TrainCreateVehicle(Config.Trolley, Config.TramSpawnLocation)
 		end
 		Wait(3000)
+		if Config.UseManualJunctions then
+			SpawnSwitches()
+		end
 		TriggerServerEvent("BGS_Trains:server:AllPlayersGetTrainsFromServer")
 	else
 		Wait(3000)
+		if Config.UseManualJunctions then
+			TriggerServerEvent("BGS_Trains:server:RenderSwitchPrompts")
+		end
 		TriggerServerEvent("BGS_Trains:server:GetTrainsFromServer")
 	end
 end
@@ -291,7 +324,7 @@ local function SwitchJunction(railswitch, switchInfo)
 		Wait(2000)
 		PlayEntityAnim(railswitch, "pulllever_railswitch", "script_story@trn3@ig@ig_1_pulllever", 1.0, false, true,false,0.0,32768)
 		TaskPlayAnim(PlayerPedId(), "script_story@trn3@ig@ig_1_pulllever", "pulllever_arthur", 1.0,	1.0, -1, 0, 0.0, false, false, false, '', false)
-		Wait(750)
+		Wait(1250)
 		Citizen.InvokeNative(0xF1C5310FEAA36B48, sound, "lock_gate", railswitch, "MOB1_Sounds", 0)
 	else
 		SetEntityCoords(PlayerPedId(), GetOffsetFromEntityInWorldCoords(railswitch, vec3(0.0, 3.425791, 0.0)), false, false, false, false)
@@ -299,75 +332,74 @@ local function SwitchJunction(railswitch, switchInfo)
 		Wait(2000)
 		PlayEntityAnim(railswitch, "leverpush_railswitch", "script_story@trn3@ig@ig_1_pulllever", 1.0, false, true,false,0.0,32768)
 		TaskPlayAnim(PlayerPedId(), "script_story@trn3@ig@ig_1_pulllever", "leverpush_arthur", 1.0,	1.0, -1, 0, 0.0, false, false, false, '', false)
-		Wait(750)
+		Wait(1250)
 		Citizen.InvokeNative(0xF1C5310FEAA36B48, sound, "lock_gate", railswitch, "MOB1_Sounds", 0)
 	end
 
+	Wait(250)
 	Citizen.InvokeNative(0x3210BCB36AF7621B, sound)
-	switchInfo.enabled = not switchInfo.enabled
+	if switchInfo.enabled == 0 then
+		switchInfo.enabled = 1
+	else
+		switchInfo.enabled = 0
+	end
 	switchInfo.pushed = not switchInfo.pushed
 
-	Citizen.InvokeNative(0xE6C5E2125EB210C1, switchInfo.trainTrack, switchInfo.junctionIndex, switchInfo.enabled)
-	Citizen.InvokeNative(0x3ABFA128F5BF5A70, switchInfo.trainTrack, switchInfo.junctionIndex, switchInfo.enabled)
+	for index, value in ipairs(Config.EastJunctionSwitchObjects) do
+		if value.coords == switchInfo.coords then
+			value.enabled = switchInfo.enabled
+			value.pushed = switchInfo.pushed
+		end
+	end
+
+	for index, value in ipairs(Config.EastJunctions) do
+		if value.trainTrack == switchInfo.trainTrack and value.junctionIndex == switchInfo.junctionIndex then
+			value.enabled = switchInfo.enabled
+		end
+	end
 end
 
-local function SpawnSwitches()
-	for index, value in ipairs(Config.EastJunctionSwitchObjects) do
-		RequestModel("s_railswitch01x_cmbd")
-		while not HasModelLoaded("s_railswitch01x_cmbd") do
-			Wait(1)
-		end
-		-- GetOffsetFromEntityInWorldCoords(PlayerPedId(), vec3(0.17, 3.425791, -0.980728))
-		local switchObject = CreateObject(joaat("s_railswitch01x_cmbd"), value.coords, true, true, false)
-		SetEntityRotation(switchObject, value.rotation)
-		if value.enabled then
-			value.pushed = true
-			RequestAnimDict("script_story@trn3@ig@ig_1_pulllever")
-			while not HasAnimDictLoaded("script_story@trn3@ig@ig_1_pulllever") do
-				Wait(1)
-			end
-			PlayEntityAnim(switchObject, "leverpush_railswitch", "script_story@trn3@ig@ig_1_pulllever", 1.0, false, true,false,0.0,32768)
-		end
-		CreateThread(function ()
-			local prompt = PromptRegisterBegin()
-			PromptSetControlAction(prompt, joaat("INPUT_CONTEXT_Y"))
-			PromptSetText(prompt, CreateVarString(10, "LITERAL_STRING", "Switch Track"))
-			PromptSetStandardMode(prompt, true)
-			PromptRegisterEnd(prompt)
-
-			local coords = GetOffsetFromEntityInWorldCoords(switchObject, vec3(0.0, 3.525791, 0))
-			local radius = 0.25
-			-- _UI_PROMPT_CONTEXT_SET_POINT
-			Citizen.InvokeNative(0xAE84C5EE2C384FB3, prompt, coords)
-			-- _UI_PROMPT_CONTEXT_SET_RADIUS
-			Citizen.InvokeNative(0x0C718001B77CA468, prompt, radius)
-
-			while true do
-				PromptSetEnabled(prompt, true)
-				Wait(1)
-				if PromptHasStandardModeCompleted(prompt, 0) then
-					PromptSetEnabled(prompt, false)
-					SwitchJunction(switchObject, value)
-					Wait(10000)
+local function RenderSwitchPrompts(switches)
+	if not switchPromptsRendered then
+		switchPromptsRendered = true
+		for index, value in ipairs(switches) do
+			CreateThread(function ()
+				local switchObject = NetworkGetEntityFromNetworkId(value[1])
+				local switchInfo = value[2]
+				local prompt = PromptRegisterBegin()
+				PromptSetControlAction(prompt, joaat("INPUT_CONTEXT_Y"))
+				PromptSetText(prompt, CreateVarString(10, "LITERAL_STRING", "Switch Track"))
+				PromptSetStandardMode(prompt, true)
+				PromptRegisterEnd(prompt)
+	
+				local coords = GetOffsetFromEntityInWorldCoords(switchObject, vec3(0.0, 3.525791, 0))
+				local radius = 0.25
+				-- _UI_PROMPT_CONTEXT_SET_POINT
+				Citizen.InvokeNative(0xAE84C5EE2C384FB3, prompt, coords)
+				-- _UI_PROMPT_CONTEXT_SET_RADIUS
+				Citizen.InvokeNative(0x0C718001B77CA468, prompt, radius)
+	
+				while true do
+					PromptSetEnabled(prompt, true)
+					Wait(1)
+					if PromptHasStandardModeCompleted(prompt, 0) then
+						PromptSetEnabled(prompt, false)
+						SwitchJunction(switchObject, switchInfo)
+						Wait(10000)
+					end
 				end
-			end
-		end)
+			end)
+		end
 	end
 end
 
 -- Spawn trains if able, if unable then store train variables from server and render blips for existing trains
 RegisterNetEvent("vorp:SelectedCharacter", function()
 	SpawnTrains()
-	if Config.UseManualJunctions then
-		SpawnSwitches()
-	end
 end)
 
 RegisterNetEvent("RSGCore:Client:OnPlayerLoaded", function()
 	SpawnTrains()
-	if Config.UseManualJunctions then
-		SpawnSwitches()
-	end
 end)
 
 -- Determine if player can spawn first trains or not
@@ -428,6 +460,10 @@ RegisterNetEvent("BGS_Trains:client:GetTrainsFromServer", function (eastNet, wes
 	end
 end)
 
+RegisterNetEvent("BGS_Trains:client:RenderAllSwitchPrompts", function (switches)
+	RenderSwitchPrompts(switches)
+end)
+
 RegisterNetEvent("BGS_Trains:client:ResetTrain", function (trainArea)
 	if trainArea == "east" then
 		if Config.UseChristmasTrainEast then
@@ -465,12 +501,10 @@ CreateThread(function()
 	while true do
 		Wait(500)
 		if westTrain then
-			if not Config.RandomizeWestJunctions then
-				for i = 1, #Config.WestJunctions do
-					if GetDistanceBetweenCoords(GetEntityCoords(westTrain), Config.WestJunctions[i].coords) < 25 then
-						Citizen.InvokeNative(0xE6C5E2125EB210C1, Config.WestJunctions[i].trainTrack, Config.WestJunctions[i].junctionIndex, Config.WestJunctions[i].enabled)
-						Citizen.InvokeNative(0x3ABFA128F5BF5A70, Config.WestJunctions[i].trainTrack, Config.WestJunctions[i].junctionIndex, Config.WestJunctions[i].enabled)
-					end
+			for i = 1, #Config.WestJunctions do
+				if GetDistanceBetweenCoords(GetEntityCoords(westTrain), Config.WestJunctions[i].coords) < 25 then
+					Citizen.InvokeNative(0xE6C5E2125EB210C1, Config.WestJunctions[i].trainTrack, Config.WestJunctions[i].junctionIndex, Config.WestJunctions[i].enabled)
+					Citizen.InvokeNative(0x3ABFA128F5BF5A70, Config.WestJunctions[i].trainTrack, Config.WestJunctions[i].junctionIndex, Config.WestJunctions[i].enabled)
 				end
 			end
 			if Citizen.InvokeNative(0xE887BD31D97793F6, westTrain) then
@@ -502,18 +536,16 @@ CreateThread(function()
 	while true do
 		Wait(500)
 		if eastTrain then
-			if not Config.RandomizeEastJunctions then
-				for i = 1, #Config.EastJunctions do
-					if GetDistanceBetweenCoords(GetEntityCoords(eastTrain), Config.EastJunctions[i].coords) < 15 then
-						if Config.EastJunctions[i].trainTrack == -705539859 and Config.EastJunctions[i].junctionIndex == 2 then
-							Config.EastJunctions[i].enabled = Config.EastJunctions[i].enabled == 0 and 1 or 0
-							Citizen.InvokeNative(0xE6C5E2125EB210C1, Config.EastJunctions[i].trainTrack, Config.EastJunctions[i].junctionIndex, Config.EastJunctions[i].enabled)
-							Citizen.InvokeNative(0x3ABFA128F5BF5A70, Config.EastJunctions[i].trainTrack, Config.EastJunctions[i].junctionIndex, Config.EastJunctions[i].enabled)
-							Wait(45000)
-						else
-							Citizen.InvokeNative(0xE6C5E2125EB210C1, Config.EastJunctions[i].trainTrack, Config.EastJunctions[i].junctionIndex, Config.EastJunctions[i].enabled)
-							Citizen.InvokeNative(0x3ABFA128F5BF5A70, Config.EastJunctions[i].trainTrack, Config.EastJunctions[i].junctionIndex, Config.EastJunctions[i].enabled)
-						end
+			for i = 1, #Config.EastJunctions do
+				if GetDistanceBetweenCoords(GetEntityCoords(eastTrain), Config.EastJunctions[i].coords) < 15 then
+					if Config.EastJunctions[i].trainTrack == -705539859 and Config.EastJunctions[i].junctionIndex == 2 and not Config.UseManualJunctions then
+						Config.EastJunctions[i].enabled = Config.EastJunctions[i].enabled == 0 and 1 or 0
+						Citizen.InvokeNative(0xE6C5E2125EB210C1, Config.EastJunctions[i].trainTrack, Config.EastJunctions[i].junctionIndex, Config.EastJunctions[i].enabled)
+						Citizen.InvokeNative(0x3ABFA128F5BF5A70, Config.EastJunctions[i].trainTrack, Config.EastJunctions[i].junctionIndex, Config.EastJunctions[i].enabled)
+						Wait(45000)
+					else
+						Citizen.InvokeNative(0xE6C5E2125EB210C1, Config.EastJunctions[i].trainTrack, Config.EastJunctions[i].junctionIndex, Config.EastJunctions[i].enabled)
+						Citizen.InvokeNative(0x3ABFA128F5BF5A70, Config.EastJunctions[i].trainTrack, Config.EastJunctions[i].junctionIndex, Config.EastJunctions[i].enabled)
 					end
 				end
 			end
