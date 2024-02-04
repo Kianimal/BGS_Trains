@@ -1,5 +1,6 @@
 local canSpawn = false
-local switchPromptsRendered = false
+local switch
+local switchPrompt
 
 local westTrain
 local westConductor
@@ -62,6 +63,133 @@ local function IsTrain(vehicle)
     end
 
     return false
+end
+
+local function GetSwitchObject()
+
+	if switchPrompt then
+		return
+	end
+
+    local size = 0
+
+	local itemSet = CreateItemset(true)
+
+	size = Citizen.InvokeNative(0x59B57C4B06531E1E, GetEntityCoords(PlayerPedId()), 7.5, itemSet, 3, Citizen.ResultAsInteger())
+
+	if size > 0 then
+		for index = 0, size do
+			local entity = GetIndexedItemInItemset(index, itemSet)
+			local model_hash = GetEntityModel(entity)
+			if model_hash == joaat("s_railswitch01x_cmbd") then
+				if IsItemsetValid(itemSet) then
+					DestroyItemset(itemSet)
+				end
+				return entity
+			end
+		end
+	end
+
+	if IsItemsetValid(itemSet) then
+		DestroyItemset(itemSet)
+	end
+end
+
+local function SwitchJunction(railswitch, switchInfo)
+	local sound = GetSoundId()
+	ClearPedTasks(PlayerPedId())
+	RequestAnimDict("script_story@trn3@ig@ig_1_pulllever")
+	while not HasAnimDictLoaded("script_story@trn3@ig@ig_1_pulllever") do
+		Wait(1)
+	end
+	if switchInfo.pushed then
+		SetEntityCoords(PlayerPedId(), GetOffsetFromEntityInWorldCoords(railswitch, vec3(0.0, 3.425791, 0.0)), false, false, false, false)
+		TaskTurnPedToFaceEntity(PlayerPedId(), railswitch, -1)
+		Wait(2000)
+		PlayEntityAnim(railswitch, "pulllever_railswitch", "script_story@trn3@ig@ig_1_pulllever", 1.0, false, true,false,0.0,32768)
+		TaskPlayAnim(PlayerPedId(), "script_story@trn3@ig@ig_1_pulllever", "pulllever_arthur", 1.0,	1.0, -1, 0, 0.0, false, false, false, '', false)
+		Wait(1250)
+		Citizen.InvokeNative(0xF1C5310FEAA36B48, sound, "lock_gate", railswitch, "MOB1_Sounds", 0)
+	else
+		SetEntityCoords(PlayerPedId(), GetOffsetFromEntityInWorldCoords(railswitch, vec3(0.0, 3.425791, 0.0)), false, false, false, false)
+		TaskTurnPedToFaceEntity(PlayerPedId(), railswitch, -1)
+		Wait(2000)
+		PlayEntityAnim(railswitch, "leverpush_railswitch", "script_story@trn3@ig@ig_1_pulllever", 1.0, false, true,false,0.0,32768)
+		TaskPlayAnim(PlayerPedId(), "script_story@trn3@ig@ig_1_pulllever", "leverpush_arthur", 1.0,	1.0, -1, 0, 0.0, false, false, false, '', false)
+		Wait(1250)
+		Citizen.InvokeNative(0xF1C5310FEAA36B48, sound, "lock_gate", railswitch, "MOB1_Sounds", 0)
+	end
+
+	Wait(250)
+	Citizen.InvokeNative(0x3210BCB36AF7621B, sound)
+	if switchInfo.enabled == 0 then
+		switchInfo.enabled = 1
+	else
+		switchInfo.enabled = 0
+	end
+	switchInfo.pushed = not switchInfo.pushed
+
+	for index, value in ipairs(Config.SwitchObjects) do
+		if value.coords == switchInfo.coords then
+			value.enabled = switchInfo.enabled
+			value.pushed = switchInfo.pushed
+		end
+	end
+
+	for index, value in ipairs(Config.EastJunctions) do
+		if value.trainTrack == switchInfo.trainTrack and value.junctionIndex == switchInfo.junctionIndex then
+			value.enabled = switchInfo.enabled
+		end
+	end
+
+	for index, value in ipairs(Config.WestJunctions) do
+		if value.trainTrack == switchInfo.trainTrack and value.junctionIndex == switchInfo.junctionIndex then
+			value.enabled = switchInfo.enabled
+		end
+	end
+end
+
+local function RenderSwitchPrompt(switchObject)
+	if switchPrompt then
+		return
+	end
+	if switchObject then
+		for j, switchInfo in ipairs(Config.SwitchObjects) do
+			if #(GetEntityCoords(switchObject) - switchInfo.coords) < 1.0 then
+				CreateThread(function ()
+					switchPrompt = PromptRegisterBegin()
+					PromptSetControlAction(switchPrompt, joaat("INPUT_CONTEXT_Y"))
+					PromptSetText(switchPrompt, CreateVarString(10, "LITERAL_STRING", "Switch Track"))
+					PromptSetStandardMode(switchPrompt, true)
+					PromptRegisterEnd(switchPrompt)
+
+					local coords = GetOffsetFromEntityInWorldCoords(switchObject, 0.0, 3.525791, 0)
+
+					if coords.x == 0 or coords.z == 0 then
+						PromptDelete(switchPrompt)
+						switchPrompt = nil
+						return
+					end
+
+					local radius = 0.5
+					-- _UI_PROMPT_CONTEXT_SET_POINT
+					Citizen.InvokeNative(0xAE84C5EE2C384FB3, switchPrompt, coords)
+					-- _UI_PROMPT_CONTEXT_SET_RADIUS
+					Citizen.InvokeNative(0x0C718001B77CA468, switchPrompt, radius)
+
+					while true do
+						PromptSetEnabled(switchPrompt, true)
+						Wait(1)
+						if PromptHasStandardModeCompleted(switchPrompt, 0) then
+							PromptSetEnabled(switchPrompt, false)
+							SwitchJunction(switchObject, switchInfo)
+							Wait(10000)
+						end
+					end
+				end)
+			end
+		end
+	end
 end
 
 -- Decorate Christmas train
@@ -201,14 +329,18 @@ local function TrainCreateVehicle(trainModel, location, trainArea, direction)
 			local trainVeh
 
 			if trainModel ~= Config.Trolley then
-				trainVeh = Citizen.InvokeNative(0xC239DBD9A57D2A71, trainModel, location, direction, false, true, true)
+				if trainArea == "east" then
+					trainVeh = Citizen.InvokeNative(0xC239DBD9A57D2A71, trainModel, location, direction, false, true, true)
+				else
+					trainVeh = Citizen.InvokeNative(0xC239DBD9A57D2A71, trainModel, location, direction, false, true, true)
+				end
 				SetTrainSpeed(trainVeh, Config.TrainMaxSpeed)
 				SetTrainCruiseSpeed(trainVeh, Config.TrainMaxSpeed)
 				Citizen.InvokeNative(0x9F29999DFDF2AEB8, trainVeh, Config.TrainMaxSpeed)
 				Citizen.InvokeNative(0x4182C037AA1F0091, trainVeh, true) 					-- Set train stops for stations
 				Citizen.InvokeNative(0x8EC47DD4300BF063, trainVeh, 0.0) 					-- Set train offset for station
 			else
-				trainVeh = Citizen.InvokeNative(0xC239DBD9A57D2A71, trainModel, location, true, false, true, true)
+				trainVeh = Citizen.InvokeNative(0xC239DBD9A57D2A71, trainModel, location, true, Config.UsePassengersTram, true, true)
 				SetTrainSpeed(trainVeh, 2.0)
 				Citizen.InvokeNative(0x4182C037AA1F0091, trainVeh, true) 					-- Set train stops for stations
 				Citizen.InvokeNative(0x8EC47DD4300BF063, trainVeh, 0.0) 					-- Set train offset for station
@@ -246,32 +378,6 @@ local function ProtectTrainDriver(trainDriverHandle)
 	end
 end
 
-local function SpawnSwitches()
-	local switches = {}
-	for index, value in ipairs(Config.EastJunctionSwitchObjects) do
-		if not value.spawned then
-			value.spawned = true
-			RequestModel("s_railswitch01x_cmbd")
-			while not HasModelLoaded("s_railswitch01x_cmbd") do
-				Wait(1)
-			end
-			local switchObject = CreateObject(joaat("s_railswitch01x_cmbd"), value.coords, true, true, false)
-			value.switchObject = NetworkGetNetworkIdFromEntity(switchObject)
-			SetEntityRotation(switchObject, value.rotation)
-			if value.enabled then
-				value.pushed = true
-				RequestAnimDict("script_story@trn3@ig@ig_1_pulllever")
-				while not HasAnimDictLoaded("script_story@trn3@ig@ig_1_pulllever") do
-					Wait(1)
-				end
-				PlayEntityAnim(switchObject, "leverpush_railswitch", "script_story@trn3@ig@ig_1_pulllever", 1.0, false, true,false,0.0,32768)
-			end
-			table.insert(switches, {NetworkGetNetworkIdFromEntity(switchObject), value})
-		end
-	end
-	TriggerServerEvent("BGS_Trains:server:RenderAllClientsSwitchPrompts", switches)
-end
-
 local function SpawnTrains()
 	TriggerServerEvent("BGS_Trains:server:CanSpawnTrain")
 	Wait(3000)
@@ -298,98 +404,10 @@ local function SpawnTrains()
 			TrainCreateVehicle(Config.Trolley, Config.TramSpawnLocation)
 		end
 		Wait(3000)
-		if Config.UseManualJunctions then
-			SpawnSwitches()
-		end
 		TriggerServerEvent("BGS_Trains:server:AllPlayersGetTrainsFromServer")
 	else
 		Wait(3000)
-		if Config.UseManualJunctions then
-			TriggerServerEvent("BGS_Trains:server:RenderSwitchPrompts")
-		end
 		TriggerServerEvent("BGS_Trains:server:GetTrainsFromServer")
-	end
-end
-
-local function SwitchJunction(railswitch, switchInfo)
-	local sound = GetSoundId()
-	ClearPedTasks(PlayerPedId())
-	RequestAnimDict("script_story@trn3@ig@ig_1_pulllever")
-	while not HasAnimDictLoaded("script_story@trn3@ig@ig_1_pulllever") do
-		Wait(1)
-	end
-	if switchInfo.pushed then
-		SetEntityCoords(PlayerPedId(), GetOffsetFromEntityInWorldCoords(railswitch, vec3(0.0, 3.425791, 0.0)), false, false, false, false)
-		TaskTurnPedToFaceEntity(PlayerPedId(), railswitch, -1)
-		Wait(2000)
-		PlayEntityAnim(railswitch, "pulllever_railswitch", "script_story@trn3@ig@ig_1_pulllever", 1.0, false, true,false,0.0,32768)
-		TaskPlayAnim(PlayerPedId(), "script_story@trn3@ig@ig_1_pulllever", "pulllever_arthur", 1.0,	1.0, -1, 0, 0.0, false, false, false, '', false)
-		Wait(1250)
-		Citizen.InvokeNative(0xF1C5310FEAA36B48, sound, "lock_gate", railswitch, "MOB1_Sounds", 0)
-	else
-		SetEntityCoords(PlayerPedId(), GetOffsetFromEntityInWorldCoords(railswitch, vec3(0.0, 3.425791, 0.0)), false, false, false, false)
-		TaskTurnPedToFaceEntity(PlayerPedId(), railswitch, -1)
-		Wait(2000)
-		PlayEntityAnim(railswitch, "leverpush_railswitch", "script_story@trn3@ig@ig_1_pulllever", 1.0, false, true,false,0.0,32768)
-		TaskPlayAnim(PlayerPedId(), "script_story@trn3@ig@ig_1_pulllever", "leverpush_arthur", 1.0,	1.0, -1, 0, 0.0, false, false, false, '', false)
-		Wait(1250)
-		Citizen.InvokeNative(0xF1C5310FEAA36B48, sound, "lock_gate", railswitch, "MOB1_Sounds", 0)
-	end
-
-	Wait(250)
-	Citizen.InvokeNative(0x3210BCB36AF7621B, sound)
-	if switchInfo.enabled == 0 then
-		switchInfo.enabled = 1
-	else
-		switchInfo.enabled = 0
-	end
-	switchInfo.pushed = not switchInfo.pushed
-
-	for index, value in ipairs(Config.EastJunctionSwitchObjects) do
-		if value.coords == switchInfo.coords then
-			value.enabled = switchInfo.enabled
-			value.pushed = switchInfo.pushed
-		end
-	end
-
-	for index, value in ipairs(Config.EastJunctions) do
-		if value.trainTrack == switchInfo.trainTrack and value.junctionIndex == switchInfo.junctionIndex then
-			value.enabled = switchInfo.enabled
-		end
-	end
-end
-
-local function RenderSwitchPrompts(switches)
-	if not switchPromptsRendered then
-		switchPromptsRendered = true
-		for index, value in ipairs(switches) do
-			CreateThread(function ()
-				local switchObject = NetworkGetEntityFromNetworkId(value[1])
-				local switchInfo = value[2]
-				local prompt = PromptRegisterBegin()
-				PromptSetControlAction(prompt, joaat("INPUT_CONTEXT_Y"))
-				PromptSetText(prompt, CreateVarString(10, "LITERAL_STRING", "Switch Track"))
-				PromptSetStandardMode(prompt, true)
-				PromptRegisterEnd(prompt)
-	
-				local coords = GetOffsetFromEntityInWorldCoords(switchObject, vec3(0.0, 3.525791, 0))
-				local radius = 0.25
-				-- _UI_PROMPT_CONTEXT_SET_POINT
-				Citizen.InvokeNative(0xAE84C5EE2C384FB3, prompt, coords)
-				-- _UI_PROMPT_CONTEXT_SET_RADIUS
-				Citizen.InvokeNative(0x0C718001B77CA468, prompt, radius)
-	
-				while true do
-					PromptSetEnabled(prompt, true)
-					Wait(1)
-					if PromptHasStandardModeCompleted(prompt, 0) then
-						PromptSetEnabled(prompt, false)
-						SwitchJunction(switchObject, switchInfo)
-						Wait(10000)
-					end
-				end
-			end)
-		end
 	end
 end
 
@@ -460,10 +478,6 @@ RegisterNetEvent("BGS_Trains:client:GetTrainsFromServer", function (eastNet, wes
 	end
 end)
 
-RegisterNetEvent("BGS_Trains:client:RenderAllSwitchPrompts", function (switches)
-	RenderSwitchPrompts(switches)
-end)
-
 RegisterNetEvent("BGS_Trains:client:ResetTrain", function (trainArea)
 	if trainArea == "east" then
 		if Config.UseChristmasTrainEast then
@@ -489,6 +503,28 @@ RegisterNetEvent("BGS_Trains:client:ResetTrain", function (trainArea)
 		TriggerServerEvent("BGS_Trains:server:AllPlayersGetTrainsFromServer")
 		Wait(2500)
 		TriggerServerEvent("BGS_Trains:server:ResetTrainBlip", westTrain)
+	end
+end)
+
+CreateThread(function ()
+	if not Config.UseManualJunctions then
+		return
+	end
+	while true do
+		Wait(2500)
+		for index, value in ipairs(Config.SwitchObjects) do
+			if #(GetEntityCoords(PlayerPedId()) - value.coords) < 20 and not switch then
+				switch = GetSwitchObject()
+				RenderSwitchPrompt(switch)
+			end
+		end
+		if switch and switchPrompt then
+			if #(GetEntityCoords(PlayerPedId()) - GetEntityCoords(switch)) > 20 then
+				PromptDelete(switchPrompt)
+				switchPrompt = nil
+				switch = nil
+			end
+		end
 	end
 end)
 

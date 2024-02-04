@@ -9,11 +9,12 @@ local westConductor
 local tram
 local tramConductor
 
-local switchTable = {}
 local switchBackup = {}
 
 if Config.UseManualJunctions then
-	switchBackup = Config.EastJunctionSwitchObjects
+	for i = 1, #Config.SwitchObjects do
+		switchBackup[i] = Config.SwitchObjects[i]
+	end
 end
 
 RegisterServerEvent("BGS_Trains:server:CanSpawnTrain", function ()
@@ -62,18 +63,6 @@ RegisterServerEvent("BGS_Trains:server:ResetTrainBlip", function (train)
 	end
 end)
 
-RegisterServerEvent("BGS_Trains:server:RenderSwitchPrompts", function ()
-	local src = source
-	TriggerClientEvent("BGS_Trains:client:RenderAllSwitchPrompts", src, switchTable)
-end)
-
-RegisterServerEvent("BGS_Trains:server:RenderAllClientsSwitchPrompts", function (switches)
-	switchTable = switches
-	for index, player in ipairs(players) do
-		TriggerClientEvent("BGS_Trains:client:RenderAllSwitchPrompts", player, switchTable)
-	end
-end)
-
 AddEventHandler("playerDropped", function(reason)
 	local _source = source
 	for index, player in ipairs(players) do
@@ -98,8 +87,7 @@ AddEventHandler("playerDropped", function(reason)
 		end
 		eastTrain, eastConductor, westTrain, westConductor, tram, tramConductor = nil, nil, nil, nil, nil, nil
 		if Config.UseManualJunctions then
-			switchTable = {}
-			for index, value in ipairs(Config.EastJunctionSwitchObjects) do
+			for index, value in ipairs(Config.SwitchObjects) do
 				value.enabled = switchBackup.enable
 				value.pushed = false
 				DeleteEntity(NetworkGetEntityFromNetworkId(value.switchObject))
@@ -133,7 +121,7 @@ AddEventHandler('onResourceStop', function(resourceName)
 		eastTrain, eastConductor, westTrain, westConductor, tram, tramConductor = nil, nil, nil, nil, nil, nil
 		players = {}
 		if Config.UseManualJunctions then
-			for index, value in ipairs(Config.EastJunctionSwitchObjects) do
+			for index, value in ipairs(Config.SwitchObjects) do
 				DeleteEntity(NetworkGetEntityFromNetworkId(value.switchObject))
 			end
 		end

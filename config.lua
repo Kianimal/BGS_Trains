@@ -20,10 +20,10 @@
 
 Config = {}
 
-Config.TrainMaxSpeed = 10.0 -- Train max speed (fot used for trams)
+Config.TrainMaxSpeed = 15.0 -- Train max speed (fot used for trams)
 
--- Config.EastTrainSpawnLocation = vec3(2590.34, -1477.24, 45.86)   -- Initial train spawn locations
-Config.EastTrainSpawnLocation = vec3(-488.33, -425.00, 82.57)
+-- Initial train spawn locations
+Config.EastTrainSpawnLocation = vec3(2590.34, -1477.24, 45.86)
 Config.WestTrainSpawnLocation = vec3(-3763.37, -2782.54, -14.43)
 Config.TramSpawnLocation =      vec3(2608.38, -1203.12, 53.16)
 
@@ -31,10 +31,12 @@ Config.UseEastTrain = true           -- Choose to use or not use each of the tra
 Config.UseWestTrain = true
 Config.UseTram = true
 
+Config.UsePassengersTram = true
+
 Config.UseChristmasTrainEast = false -- Spawns a christmas train with decorations
 Config.UseChristmasTrainWest = false
 
-Config.UseFancyTrainEast = false      -- Spawns a fancy train with fancy cabins (forces train hash)
+Config.UseFancyTrainEast = true      -- Spawns a fancy train with fancy cabins (forces train hash)
 Config.UseFancyTrainWest = false
 
 Config.EastTrainDirection = false    -- set to true to have it go the other way
@@ -44,12 +46,12 @@ Config.UseTrainBlips = false
 Config.TrainBlipNameEast = "BGS East Line"
 Config.TrainBlipNameWest = "BGS West Line"
 
-Config.EastTrain = 0x592A5CD0   -- List can be found at https://alloc8or.re/rdr3/doc/enums/eTrainConfig.txt
+Config.EastTrain = 0xCD2C7CA1   -- List can be found at https://alloc8or.re/rdr3/doc/enums/eTrainConfig.txt
 Config.WestTrain = 0xCD2C7CA1
 Config.Trolley = 0xBF69518F     --trolley_config = 0xBF69518F
                                 --trolley_config2 = 0x09B679D6
 
-Config.StationWaitTime = 30     -- time that trains wait at a station (in seconds)
+Config.StationWaitTime = 60     -- time that trains wait at a station (in seconds)
 Config.TrainDespawnTimer = 10   -- time to despawn stuck/abandoned trains (in minutes)
 
 Config.ProtectTrainDrivers = true -- SHOULD protect the train driver from being kicked out if set to true (let me know if it doesn't)
@@ -72,10 +74,10 @@ Config.RouteOneTramSwitches = {
 
 }
 
-Config.EastJunctionSwitchObjects = {
-    { pushed = false, coords = vector3(610.6588745117188, 1664.1292724609375, 186.2771453857422),  rotation = vector3(0, 0, -65.51180267333984), trainTrack = -705539859, junctionIndex = 8, enabled = 0 },
-    { pushed = false, coords = vector3(-277.1185302734375, -316.1802673339844, 87.91668701171875), rotation = vector3(0, 0, 26.2404613494873),   trainTrack = -705539859, junctionIndex = 2, enabled = 0 },
-    { pushed = false, coords = vector3(357.8780822753906, 598.0778198242188, 114.59004974365234),  rotation = vector3(0, 0, 51.54927062988281),  trainTrack = 1499637393, junctionIndex = 4, enabled = 1 },
+Config.SwitchObjects = {
+    { pushed = false, coords = vector3(610.658, 1664.129, 186.277),  trainTrack = -705539859, junctionIndex = 8, enabled = 0 },
+    { pushed = false, coords = vector3(-277.118, -316.180, 87.916), trainTrack = -705539859, junctionIndex = 2, enabled = 0 },
+    { pushed = false, coords = vector3(357.878, 598.077, 114.590),  trainTrack = 1499637393, junctionIndex = 4, enabled = 1 },
 }
 
 Config.EastJunctions = {
