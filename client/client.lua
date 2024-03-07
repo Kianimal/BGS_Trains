@@ -438,6 +438,8 @@ RegisterNetEvent("BGS_Trains:client:GetTrainsFromServer", function (eastNet, wes
 			ProtectTrainDriver(eastConductor)
 			spawnedEast = true
 			RenderTrainBlip(eastTrain)
+			Citizen.InvokeNative(0xA670B3662FAFFBD0, eastNet)
+			Citizen.InvokeNative(0xA670B3662FAFFBD0, eastConductorNet)
 		end
 	end
 	if Config.UseWestTrain then
@@ -448,6 +450,8 @@ RegisterNetEvent("BGS_Trains:client:GetTrainsFromServer", function (eastNet, wes
 			ProtectTrainDriver(westConductor)
 			spawnedWest = true
 			RenderTrainBlip(westTrain)
+			Citizen.InvokeNative(0xA670B3662FAFFBD0, westNet)
+			Citizen.InvokeNative(0xA670B3662FAFFBD0, westConductorNet)
 		end
 	end
 	if Config.UseTram then
@@ -457,6 +461,8 @@ RegisterNetEvent("BGS_Trains:client:GetTrainsFromServer", function (eastNet, wes
 			tramConductor = NetworkGetEntityFromNetworkId(tramConductorNet)
 			ProtectTrainDriver(tramConductor)
 			spawnedTram = true
+			Citizen.InvokeNative(0xA670B3662FAFFBD0, tramNet)
+			Citizen.InvokeNative(0xA670B3662FAFFBD0, tramConductorNet)
 		end
 	end
 
