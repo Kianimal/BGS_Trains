@@ -370,9 +370,10 @@ end
 -- Prevent people from knocking driver out of train
 local function ProtectTrainDriver(trainDriverHandle)
 	if trainDriverHandle then
+		print("protecting train driver")
 		SetPedCanBeKnockedOffVehicle(trainDriverHandle, 1)
 		SetEntityInvincible(trainDriverHandle, true)
-		SetBlockingOfNonTemporaryEvents(trainDriverHandle, true)
+		Citizen.InvokeNative(0x9F8AA94D6D97DBF4, trainDriverHandle, true)
 		SetEntityAsMissionEntity(trainDriverHandle, true, true)
 		SetEntityCanBeDamaged(trainDriverHandle, false)
 	end
@@ -459,6 +460,7 @@ RegisterNetEvent("BGS_Trains:client:GetTrainsFromServer", function (eastNet, wes
 		if tramNet then
 			tram = NetworkGetEntityFromNetworkId(tramNet)
 			tramConductor = NetworkGetEntityFromNetworkId(tramConductorNet)
+			FreezeEntityPosition(tramConductor, true)
 			ProtectTrainDriver(tramConductor)
 			spawnedTram = true
 			Citizen.InvokeNative(0xA670B3662FAFFBD0, tramNet)
@@ -668,3 +670,5 @@ CreateThread(function()
 		end
 	end
 end)
+
+SpawnTrains()

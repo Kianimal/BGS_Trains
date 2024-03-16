@@ -42,7 +42,7 @@ Config.UseFancyTrainWest = false
 Config.EastTrainDirection = false    -- set to true to have it go the other way
 Config.WestTrainDirection = false
 
-Config.UseTrainBlips = false
+Config.UseTrainBlips = true
 Config.TrainBlipNameEast = "BGS East Line"
 Config.TrainBlipNameWest = "BGS West Line"
 
